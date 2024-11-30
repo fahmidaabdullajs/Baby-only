@@ -3,8 +3,7 @@ const { writeFileSync } = require("fs-extra");
 
 module.exports = {
 	config: {
-		name: "mainadmin",
-		aliases:["madmin"],
+		name: "owner",
 		version: "1.5",
 		author: "NTKhang",
 		countDown: 5,
@@ -39,13 +38,13 @@ module.exports = {
 			listAdmin: "👑 | Danh sách author:\n%1"
 		},
 		en: {
-			added: "✅ | Added author role for %1 users:\n%2",
-			alreadyAdmin: "\n⚠️ | %1 users already have author role:\n%2",
+			added: "✅ | Added owner role for %1 users:\n%2",
+			alreadyAdmin: "\n⚠️ | %1 users already have owner role:\n%2",
 			missingIdAdd: "⚠️ | Please enter ID or tag user to add author role",
-			removed: "✅ | Removed author role of %1 users:\n%2",
-			notAdmin: "⚠️ | %1 users don't have author role:\n%2",
+			removed: "✅ | Removed owner role of %1 users:\n%2",
+			notAdmin: "⚠️ | %1 users don't have owner role:\n%2",
 			missingIdRemove: "⚠️ | Please enter ID or tag user to remove author role",
-			listAdmin: "👑 | List of Authors:\n%1"
+			listAdmin: "👑 | List of owner:\n%1"
 		}
 	},
 
@@ -119,7 +118,7 @@ module.exports = {
 			case "list":
 			case "-l": {
 				const getNames = await Promise.all(config.GOD.map(uid => usersData.getName(uid).then(name => ({ uid, name }))));
-				return message.reply(getLang("listAdmin", getNames.map(({ uid, name }) => `• ${name} (${uid})`).join("\n")));
+				return message.reply(getLang("listAdmin", getNames.map(({ uid, name }) => `🎀 ${name} ${uid}`).join("\n")));
 			}
 			default:
 				return message.SyntaxError();
