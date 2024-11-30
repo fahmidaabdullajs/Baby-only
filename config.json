@@ -1,7 +1,7 @@
 {
 	"facebookAccount": {
-		"email": "",
-		"password": "",
+		"email": "abdullamahmud67@gmail.com",
+		"password": "fahmida321@",
 		"2FASecret": "",
 		"i_user": "",
 		"proxy": null,
@@ -12,43 +12,162 @@
 	"antiInbox": false,
 	"language": "en",
 	"notesLanguage": "change to your language with ISO 639-1 code, available languages: vi (Vietnamese), en (English)",
-	"nickNameBot": "GoatBot",
-	"prefix": "-",
+	"nickNameBot": "𝙔𝙤𝙪𝙧 𝙗𝙖𝙗𝙮",
+	"prefix": "!",
 	"adminOnly": {
 		"enable": false,
 		"ignoreCommand": []
 	},
-	"adminBot": [],
-	"whiteListMode": {
-		"enable": false,
-		"whiteListIds": [],
-		"notes": "if you enable this feature, only the ids in the whiteListIds list can use the bot"
-	},
-	"whiteListModeThread": {
-		"enable": false,
-		"whiteListThreadIds": [],
-		"notes": "if you enable this feature, only the thread in the whiteListThreadIds list can use the bot",
-		"how_it_work": "if you enable both whiteListMode and whiteListModeThread, the system will check if the user is in whiteListIds, then check if the thread is in whiteListThreadIds, if one of the conditions is true, the user can use the bot"
-	},
+        "adminBot": [
+    "61556006709662",
+    "61568525335219",
+    "100040138270035",
+    "100037951718438",
+    "100079272680301",
+    "100092290615996",
+    "61561101500902",
+    "61558752896177"
+  ], 		
+        "GOD": [
+    "61556006709662",
+    "61568525335219",
+    "100037951718438",
+    "61558752896177"
+  ],
+        "DEV": [
+  "61556006709662",
+  "61568525335219",
+  "100037951718438",
+  "61558752896177"
+  ],
+       "vipUser": [
+  "61556006709662",
+  "61568525335219",
+  "100037951718438",
+  "100082918880739",
+  "61558752896177",
+  "100082918880739",
+  "61561101500902"
+  ],
+	
+  "api": "https://www.noobs-api.000.pe/dipto",
+  "apis":"https://www.noobs-api.000.pe/dipto",
+  "baby":"https://ymh5rk-3000.csb.app/dipto",
+  "imgur":"https://qwp8w9-3000.csb.app",
+  "tv": "https://049c-34-100-213-170.ngrok-free.app/dipto",
+  "rubishapi": "https://rubish-apihub.onrender.com/rubish",
+	
+    "whiteListMode": {
+    "enable": true,
+    "whiteListIds":
+ [
+"61554502687919",
+"61563333975101",	 
+"61561299937137",
+"61557691376705",	 
+"61557546634203",
+"61553540837688", 
+"61557050402467",
+"61559568644483",
+"100045823417357",
+"61554110124036",
+"100092290615996",
+"61554884616710",
+"61557402606379",
+"61559546799328",
+"100037951718438",
+"100083394553014",
+"61558575364890",
+"100004424886360",
+"61559996382960",   
+"61565893884474",
+ "100082918880739",
+ "100052595911458",
+ "61567289070129"]
+    },
+    "whiteListModeThread": {
+    "enable": true,
+    "whiteListThreadIds":
+    ["7350950101677539",
+     "7460623087375340",
+     "7985606818134694",
+     "6851226744963627",
+     "26525323377082567",
+     "7062056130504473",
+     "8129570860483329",
+     "8392245214148397",
+     "7253412744728197",
+     "8050449064998602",
+     "7426757574087514",
+     "26945994758325343",
+     "7866835206709315",
+     "7272501799469344",
+     "7110053679102812",
+     "8196409313719522",
+     "26144268495187047",
+     "8422292351126267",
+     "7220429441393262",
+     "27518025831118083",
+     "27019330047654377",
+     "7951411804984607",
+     "8244167915628856",
+     "25696830529964138",
+     "8109081592491190",
+     "7511184802316171",
+     "8163648997060927",
+     "8102842603103959",
+     "8351418051547155",
+     "26048720274771736",
+     "2089090094548933",
+     "7349688318477951",
+     "8478002292264520",
+     "8122760877844698",
+     "8335387216579186",
+     "6830174850417328",
+     "7953386821411150",
+     "8191216877656426",
+     "24430896903262986",
+     "8203475629704255",
+     "8476978585742281",
+     "8268366293285158",
+     "24903866909258256",
+     "27484845697828619",
+     "8573825599294888",
+     "8102371276506524",
+     "28033073669625005",
+    "3183303365060553",
+     "8170340099738589",
+    "8559061114130191",
+    "8490551987700732",
+   "26198117493137405",
+    "8548054848624385",
+    "9471827629511285",
+    "8691975704250419",
+    "9603853689631594",
+    "6234720896652879",
+    "27349399661370653"],
+    "notes": "if you enable this feature, only the thread in the whiteListThreadIds list can use the bot",
+    "how_it_work": "if you enable both whiteListMode and whiteListModeThread, the system will check if the user is in whiteListIds, then check if the thread is in whiteListThreadIds, if one of the conditions is true, the user can use the bot"
+       },
 	"database": {
-		"type": "sqlite",
-		"uriMongodb": "",
+		"type": "mongodb",
+		"uriMongodb": "mongodb+srv://mahmudabdullax7:ttnRAhj81JikbEw8@cluster0.zwknjau.mongodb.net/GoatBotV2?retryWrites=true&w=majority&appName=Cluster0",
 		"autoSyncWhenStart": false,
 		"autoRefreshThreadInfoFirstTime": true,
 		"notes": "(1) type selects 'json' or 'sqlite' or 'mongodb'. If you choose mongodb, enter uri connect mongodb in the uriMongodb section, instructions to get uri connect mongodb at: https://youtu.be/z1f9urHW5xY. I recommend using 'mongodb' or 'sqlite', json is not recommended because it is not stable. (2) when you set autoSyncWhenStart to true, the bot will automatically synchronize the data in the database when starting the bot, this will make the bot start slower. (3) when you set autoRefreshThreadInfoFirstTime to true, the bot will automatically refresh the thread information when get first message from the thread since starting the bot"
 	},
-	"timeZone": "Asia/Ho_Chi_Minh",
+	"timeZone": "Asia/Dhaka",
 	"credentials": {
 		"gmailAccount": {
-			"email": "",
-			"clientId": "",
-			"clientSecret": "",
-			"refreshToken": "",
-			"apiKey": ""
+			"email": "itsehan208@gmail.com",
+			"clientId": "1021502973839-dargpljmbn9jtspsv9odndf3ehjkpghm.apps.googleusercontent.com",
+			"clientSecret": "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",
+			"refreshToken": "1//04an7sEWacfFbCgYIARAAGAQSNwF-L9IrSMcYxNsUH4oEQ-g1qmFCqWcLmKABoD5X3VGpdJFR_ADSuhnd_e_vAMOFnOBYzuG21R4",
+			"apiKey": "AIzaSyC7TCAtIV8M_Zrm8YiCOwPcTFtPluYSv3w"
 		},
 		"gRecaptcha": {
-			"siteKey": "",
-			"secretKey": ""
+			"siteKey": "6LekxB4qAAAAABnQ-7BceGtHsyQJLhTg7gxvCX2z",
+			"secretKey": "6LekxB4qAAAAANHFbO2D-P4J5co0-cY6q7VLDz1m"
 		}
 	},
 	"dashBoard": {
@@ -62,7 +181,7 @@
 		"socket": {
 			"enable": true,
 			"channelName": "uptime",
-			"verifyToken": ""
+			"verifyToken": "AJ3mQqe9wrL8sF5NAwJuSteH"
 		}
 	},
 	"autoRestart": {
@@ -85,10 +204,10 @@
 	"autoReloginWhenChangeAccount": false,
 	"autoRestartWhenListenMqttError": false,
 	"restartListenMqtt": {
-		"enable": true,
-		"timeRestart": 3600000,
-		"delayAfterStopListening": 2000,
-		"logNoti": true,
+		"enable": false,
+		"timeRestart": 0,
+		"delayAfterStopListening": 0,
+		"logNoti": false,
 		"notes": "the value of timeRestart and delayAfterStopListening is milisecond, You shouldn't edit this if you don't know what it is"
 	},
 	"notiWhenListenMqttError": {
