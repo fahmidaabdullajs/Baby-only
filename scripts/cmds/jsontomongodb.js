@@ -12,7 +12,7 @@ module.exports = {
 			vi: "Đồng bộ dữ liệu từ json sang mongodb",
 			en: "Synchronize data from json to mongodb"
 		},
-		category: "owner",
+		category: "utility",
 		guide: {
 			vi: "   {pn} <thread | user | dashboard | global | all>: Sẽ đồng bộ dữ liệu từ data json được lưu trong thư mục database/data sang mongodb\n\n   Lưu ý: Nếu dữ liệu đã tồn tại trong mongodb thì sẽ được cập nhật lại",
 			en: "   {pn} <thread | user | dashboard | global | all>: Will synchronize data from json data stored in the database/data folder to mongodb\n\n   Note: If the data already exists in mongodb, it will be updated"

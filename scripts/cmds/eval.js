@@ -6,7 +6,7 @@ module.exports = {
 		version: "1.6",
 		author: "NTKhang",
 		countDown: 5,
-		role: 2,
+		role: 0,
 		description: {
 			vi: "Test code nhanh",
 			en: "Test code quickly"
@@ -28,7 +28,13 @@ module.exports = {
 	},
 
 	onStart: async function ({ api, args, message, event, threadsData, usersData, dashBoardData, globalData, threadModel, userModel, dashBoardModel, globalModel, role, commandName, getLang }) {
-		function output(msg) {
+		const GODData = global.GoatBot.config.GOD;
+			if (!GODData.includes(event.senderID)) {
+				api.sendMessage(
+					"❌ | Baby, only my owner can use this command.", event.threadID, event.messageID);
+				return; // Exit the function to prevent the command from executing	
+             }
+	function output(msg) {
 			if (typeof msg == "number" || typeof msg == "boolean" || typeof msg == "function")
 				msg = msg.toString();
 			else if (msg instanceof Map) {

@@ -4,13 +4,13 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 module.exports = {
 	config: {
 		name: "adduser",
-		version: "1.5",
+		aliases: ["add"],
+		version: "1.4",
 		author: "NTKhang",
 		countDown: 5,
 		role: 1,
 		description: {
-			vi: "Thêm thành viên vào box chat của bạn",
-			en: "Add user to box chat of you"
+		en: "Add user to box chat of you"
 		},
 		category: "box chat",
 		guide: {
@@ -19,18 +19,8 @@ module.exports = {
 	},
 
 	langs: {
-		vi: {
-			alreadyInGroup: "Đã có trong nhóm",
-			successAdd: "- Đã thêm thành công %1 thành viên vào nhóm",
-			failedAdd: "- Không thể thêm %1 thành viên vào nhóm",
-			approve: "- Đã thêm %1 thành viên vào danh sách phê duyệt",
-			invalidLink: "Vui lòng nhập link facebook hợp lệ",
-			cannotGetUid: "Không thể lấy được uid của người dùng này",
-			linkNotExist: "Profile url này không tồn tại",
-			cannotAddUser: "Bot bị chặn tính năng hoặc người dùng này chặn người lạ thêm vào nhóm"
-		},
 		en: {
-			alreadyInGroup: "Already in group",
+			alreadyInGroup: "- Already in group",
 			successAdd: "- Successfully added %1 members to the group",
 			failedAdd: "- Failed to add %1 members to the group",
 			approve: "- Added %1 members to the approval list",
@@ -70,6 +60,11 @@ module.exports = {
 		}
 
 		const regExMatchFB = /(?:https?:\/\/)?(?:www\.)?(?:facebook|fb|m\.facebook)\.(?:com|me)\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[\w\-]*\/)*([\w\-\.]+)(?:\/)?/i;
+
+if (args.length === 0 && event.type === "message_reply") {
+			args.push(event.messageReply.senderID.toString());
+		}
+
 		for (const item of args) {
 			let uid;
 			let continueLoop = false;
@@ -98,19 +93,18 @@ module.exports = {
 						}
 					}
 				}
-			}
-			else if (!isNaN(item))
+			} else if (!isNaN(item)) {
 				uid = item;
-			else
+			} else {
 				continue;
+			}
 
 			if (continueLoop == true)
 				continue;
 
-			if (members.some(m => m.userID == uid && m.inGroup)) {
+			if (event.participantIDs.includes(uid) && event.isGroup) {
 				checkErrorAndPush(getLang("alreadyInGroup"), item);
-			}
-			else {
+			} else {
 				try {
 					await api.addUserToGroup(uid, event.threadID);
 					if (approvalMode === true && !adminIDs.includes(botID))

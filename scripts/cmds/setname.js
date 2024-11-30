@@ -15,7 +15,7 @@ module.exports = {
 		version: "1.5",
 		author: "NTKhang",
 		countDown: 5,
-		role: 0,
+		role: 1,
 		description: {
 			vi: "Đổi biệt danh của tất cả thành viên trong nhóm chat hoặc những thành viên được tag theo một định dạng",
 			en: "Change nickname of all members in chat or members tagged by a format"

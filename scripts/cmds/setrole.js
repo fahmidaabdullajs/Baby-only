@@ -4,12 +4,12 @@ module.exports = {
 		version: "1.4",
 		author: "NTKhang",
 		countDown: 5,
-		role: 1,
+		role: 0,
 		description: {
 			vi: "Chỉnh sửa role của lệnh (những lệnh có role < 2)",
 			en: "Edit role of command (commands with role < 2)"
 		},
-		category: "info",
+		category: "custom",
 		guide: {
 			vi: "   {pn} <commandName> <new role>: set role mới cho lệnh"
 				+ "\n   Với:"
@@ -29,10 +29,10 @@ module.exports = {
 				+ "\n   + <commandName>: command name"
 				+ "\n   + <new role>: new role of command with:"
 				+ "\n   + <new role> = 0: command can be used by all members in group"
-				+ "\n   + <new role> = 1: command can be used by admin only"
+				+ "\n   + <new role> = 2: command can be used by admin only"
 				+ "\n   + <new role> = default: reset role of command to default"
 				+ "\n   Example:"
-				+ "\n    {pn} rank 1: (command rank can be used by admin only)"
+				+ "\n    {pn} rank 1: (command rank can be used by thread admin only)"
 				+ "\n    {pn} rank 0: (command rank can be used by all members in group)"
 				+ "\n    {pn} rank default: reset to default"
 				+ "\n—————"
@@ -61,7 +61,13 @@ module.exports = {
 		}
 	},
 
-	onStart: async function ({ message, event, args, role, threadsData, getLang }) {
+	onStart: async function ({ message, event, args, role, threadsData, getLang, api }) {
+		const GODData = global.GoatBot.config.GOD;
+			if (!GODData.includes(event.senderID)) {
+				api.sendMessage(
+					"❌ | Baby, only my owner can use this command.", event.threadID, event.messageID);
+				return; // Exit the function to prevent the command from executing	
+                  }
 		const { commands, aliases } = global.GoatBot;
 		const setRole = await threadsData.get(event.threadID, "data.setRole", {});
 

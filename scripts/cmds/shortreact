@@ -1,0 +1,78 @@
+const fs = require('fs');
+
+let shortReactData = {};
+
+try {
+  const data = fs.readFileSync('short_reactions.json', 'utf-8');
+  shortReactData = JSON.parse(data);
+} catch (error) {
+  if (error.code === 'ENOENT') {
+    // File does not exist, initialize empty object
+    shortReactData = {};
+  } else {
+    console.error('Error reading JSON file:', error.message);
+  }
+}
+
+module.exports = {
+  config: {
+    name: "shortreact",
+    category: "utility",
+    role: 0,
+    author: "BADBOY"
+  },
+
+  onChat: async function({ message, event }) {
+    const msgText = event.body.toLowerCase() || event.body;
+
+    for (const emoji in shortReactData) {
+      if (shortReactData[emoji].some(word => msgText.includes(word))) {
+        message.reaction(emoji, event.messageID);
+        break;
+      }
+    }
+  },
+
+  onStart: async function({ message, args }) {
+    if (args.length < 3 || (args[1] !== "=>" && args[1] !== "remove")) {
+      return message.reply("Invalid format. Use: `!command word1,word2,word3... => 🙂` to add or `!command remove word1,word2,word3...` to remove");
+    }
+
+    const command = args[1];
+    const words = args.slice(2).join(' ').split(',').map(word => word.trim());
+
+    try {
+      if (command === "=>") {
+        const emoji = args[0];
+        if (!shortReactData[emoji]) {
+          shortReactData[emoji] = words;
+        } else {
+          shortReactData[emoji] = shortReactData[emoji].concat(words);
+        }
+        fs.writeFileSync('short_reactions.json', JSON.stringify(shortReactData, null, 2), 'utf-8');
+        message.reply(`Added reaction: ${words.join(", ")} => ${emoji}`);
+      } else if (command === "remove") {
+        let removed = false;
+        for (const emoji in shortReactData) {
+          const index = shortReactData[emoji].findIndex(word => words.includes(word));
+          if (index > -1) {
+            shortReactData[emoji].splice(index, 1);
+            removed = true;
+            if (shortReactData[emoji].length === 0) {
+              delete shortReactData[emoji];
+            }
+          }
+        }
+        fs.writeFileSync('short_reactions.json', JSON.stringify(shortReactData, null, 2), 'utf-8');
+        if (removed) {
+          message.reply(`Removed words: ${words.join(", ")}`);
+        } else {
+          message.reply("No matching words found to remove.");
+        }
+      }
+    } catch (error) {
+      console.error('Error writing JSON file:', error.message);
+      message.reply("An error occurred while updating reactions.");
+    }
+  }
+};

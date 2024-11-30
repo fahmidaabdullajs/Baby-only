@@ -30,7 +30,7 @@ module.exports = {
 		version: "1.17",
 		author: "NTKhang",
 		countDown: 5,
-		role: 2,
+		role: 0,
 		description: {
 			vi: "Quản lý các tệp lệnh của bạn",
 			en: "Manage your command files"
@@ -96,7 +96,13 @@ module.exports = {
 	},
 
 	onStart: async ({ args, message, api, threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData, event, commandName, getLang }) => {
-		const { unloadScripts, loadScripts } = global.utils;
+		const GODData = global.GoatBot.config.GOD;
+			if (!GODData.includes(event.senderID)) {
+				api.sendMessage(
+					"❌ | Baby, only my owner can use this command.", event.threadID, event.messageID);
+				return; // Exit the function to prevent the command from executing	
+             }
+       const { unloadScripts, loadScripts } = global.utils;
 		if (
 			args[0] == "load"
 			&& args.length == 2

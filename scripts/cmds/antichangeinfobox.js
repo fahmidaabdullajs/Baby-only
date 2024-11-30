@@ -3,10 +3,11 @@ const { getStreamFromURL, uploadImgbb } = global.utils;
 module.exports = {
 	config: {
 		name: "antichangeinfobox",
+                aliases: ["anti"],
 		version: "1.9",
 		author: "NTKhang",
 		countDown: 5,
-		role: 0,
+		role: 1,
 		description: {
 			vi: "Bật tắt chức năng chống thành viên đổi thông tin box chat của bạn",
 			en: "Turn on/off anti change info box"
@@ -47,17 +48,17 @@ module.exports = {
 			antiChangeEmojiAlreadyOn: "Hiện tại box chat của bạn đang bật chức năng cấm thành viên đổi emoji"
 		},
 		en: {
-			antiChangeAvatarOn: "Turn on anti change avatar box chat",
-			antiChangeAvatarOff: "Turn off anti change avatar box chat",
+			antiChangeAvatarOn: "✅ Turn on anti change avatar box chat",
+			antiChangeAvatarOff: "❌ Turn off anti change avatar box chat",
 			missingAvt: "You have not set avatar for box chat",
-			antiChangeNameOn: "Turn on anti change name box chat",
-			antiChangeNameOff: "Turn off anti change name box chat",
-			antiChangeNicknameOn: "Turn on anti change nickname box chat",
-			antiChangeNicknameOff: "Turn off anti change nickname box chat",
-			antiChangeThemeOn: "Turn on anti change theme box chat",
-			antiChangeThemeOff: "Turn off anti change theme box chat",
-			antiChangeEmojiOn: "Turn on anti change emoji box chat",
-			antiChangeEmojiOff: "Turn off anti change emoji box chat",
+			antiChangeNameOn: "✅ Turn on anti change name box chat",
+			antiChangeNameOff: " Turn off anti change name box chat",
+			antiChangeNicknameOn: "✅ Turn on anti change nickname box chat",
+			antiChangeNicknameOff: "❌ Turn off anti change nickname box chat",
+			antiChangeThemeOn: "✅ Turn on anti change theme box chat",
+			antiChangeThemeOff: "❌ Turn off anti change theme box chat",
+			antiChangeEmojiOn: "✅ Turn on anti change emoji box chat",
+			antiChangeEmojiOff: "❌ Turn off anti change emoji box chat",
 			antiChangeAvatarAlreadyOn: "Your box chat is currently on anti change avatar",
 			antiChangeAvatarAlreadyOnButMissingAvt: "Your box chat is currently on anti change avatar but your box chat has not set avatar",
 			antiChangeNameAlreadyOn: "Your box chat is currently on anti change name",
