@@ -4,7 +4,7 @@ module.exports = {
         version: "1.3",
         author: "NTKhang",
         countDown: 5,
-        role: 0,
+        role: 1,
         description: {
             vi: "Kick thành viên khỏi box chat",
             en: "Kick member out of chat box"
@@ -26,12 +26,6 @@ module.exports = {
     },
 
     onStart: async function ({ message, event, args, threadsData, api, getLang }) {
-        const GODData = global.GoatBot.config.GOD;
-			if (!GODData.includes(event.senderID)) {
-				api.sendMessage(
-					"❌ | Baby, only my owner can use this command.", event.threadID, event.messageID);
-				return; // Exit the function to prevent the command from executing	
-            }
         const adminIDs = await threadsData.get(event.threadID, "adminIDs");
         if (!adminIDs.includes(api.getCurrentUserID())) {
             return message.reply(getLang("needAdmin"));
