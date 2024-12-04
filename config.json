@@ -60,7 +60,7 @@
   "rubishapi": "https://rubish-apihub.onrender.com/rubish",
 	
     "whiteListMode": {
-    "enable": true,
+    "enable": false,
     "whiteListIds":
  ["61557775720530",
   "61556006709662"
