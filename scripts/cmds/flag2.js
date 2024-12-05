@@ -19,16 +19,16 @@ module.exports = {
 
   onReply: async function ({ api, event, Reply, usersData, threadsData }) {
     const { country, attempts } = Reply;
-    const maxAttempts = 2;
+    const maxAttempts = 1;
     const wrongCoinDeduction = 100;  // Penalty for wrong answer
     const wrongExpDeduction = 50;   // Penalty for wrong answer
-    const finalPenaltyCoins = 150;  // Penalty for using all attempts
-    const finalPenaltyExp = 75;    // Penalty for using all attempts
+    const finalPenaltyCoins = 300;  // Penalty for using all attempts
+    const finalPenaltyExp = 121;    // Penalty for using all attempts
 
     if (event.type == "message_reply") {
       const reply = event.body.toLowerCase();
-      const getCoin = 1 * 300;  // Reward for correct answer
-      const getExp = 1 * 121;   // Reward for correct answer
+      const getCoin = 1 * 500;  // Reward for correct answer
+      const getExp = 1 * 150;   // Reward for correct answer
       const userData = await usersData.get(event.senderID);
 
       // If user has reached max attempts
@@ -45,7 +45,7 @@ module.exports = {
         });
 
         // Send the penalty message
-        const incorrectMsg = `🚫 | You have reached the maximum number of attempts (2).\nThe correct answer was: ${country}\nYou have lost ${penaltyCoins} coins & ${penaltyExp} exp.`;
+        const incorrectMsg = `❌ | Wrong Answer baby.\nYou lost ${penaltyCoins} coin & ${penaltyExp} exp.\ncorrect answer was: ${country}\n✅ | Try agian`;
 
         // Auto unsend the previous message after a few seconds
         try {
@@ -81,7 +81,7 @@ module.exports = {
           } catch (err) {
             console.log("Error: ", err.message);
           } finally {
-            const message = `✅ | Correct answer!\nYou have earned ${getCoin} coins and ${getExp} exp.`;
+            const message = `✅ | Correct answer baby.\nYou have earned ${getCoin} coins and ${getExp} exp.`;
             await api.sendMessage(message, event.threadID, event.messageID);
           }
         } else {
