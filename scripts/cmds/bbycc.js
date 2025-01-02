@@ -1,4 +1,8 @@
-const axios = require("axios");
+const axios = require('axios');
+const baseApiUrl = async () => {
+  const base = await axios.get('https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json');
+  return base.data.api;
+};
 const prefixes = [
   "bby",
   "janu",
@@ -14,7 +18,8 @@ const prefixes = [
   "طفل",
   "بوت",
   "babe"
-];
+]
+;
 
 module.exports = {
   config: {
@@ -49,7 +54,7 @@ module.exports = {
       if (reply) {
         try {
           const response = await axios.get(
-            `${global.GoatBot.config.api}/baby?text=${encodeURIComponent(reply)}&senderID=${event.senderID}&font=1`
+            `${await baseApiUrl()}/baby?text=${encodeURIComponent(reply)}&senderID=${event.senderID}&font=1`
           );
           const message = response.data.reply;
           
@@ -212,7 +217,7 @@ module.exports = {
         } else {
           words.shift();
           const oop = words.join(" ");
-const response = await axios.get(`${global.GoatBot.config.api}/baby?text=${oop}&senderID=${event.senderID}&font=1`);
+const response = await axios.get(`${await baseApiUrl()}/baby?text=${oop}&senderID=${event.senderID}&font=1`);
           const mg = response.data.reply;
           if (response.data.react) {
             setTimeout(function () {
