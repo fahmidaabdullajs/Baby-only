@@ -1,92 +1,74 @@
 const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
-const baseApiUrl = async () => {
-    const base = await axios.get(
-        `https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json`,
-    );
-    return base.data.api;
-};
 
 module.exports = {
-    config: {
-        name: "pin",
-        aliases: ["pinterest", "pic"],
-        version: "1.0",
-        author: "Mah MUD彡",
-        countDown: 15,
-        role: 0,
-        shortDescription: "Pinterest Image Search",
-        longDescription: "Pinterest Image Search",
-        category: "media",
-        guide: {
-            en: "{pn} query",
-        },
+  config: {
+    name: "pin",
+    aliases: ["pinterest"],
+    version: "1.0.0",
+    author: "kshitiz",
+    role: 0,
+    countDown: 10,
+    shortDescription: {
+      en: "Search images on Pinterest"
     },
+    category: "image",
+    guide: {
+      en: "{prefix}pin <search query> -<number of images>"
+    }
+  },
 
-    onStart: async function ({ api, event, args }) {
-        const queryAndLength = args.join(" ").split("-");
-        const q = queryAndLength[0].trim();
-        const length = queryAndLength[1].trim();
+  onStart: async function ({ api, event, args, usersData }) {
+    try {
+      const searchQuery = args.join(" ");
 
-        if (!q || !length) {
-            return api.sendMessage(
-                "❌| Wrong Format",
-                event.threadID,
-                event.messageID,
-            );
-        }
+   
+      if (!searchQuery.includes("-")) {
+        return api.sendMessage(`Invalid format. Example: {prefix}pin cats -5`, event.threadID, event.messageID);
+      }
 
+     
+      const [query, numImages] = searchQuery.split("-").map(str => str.trim());
+      const numberOfImages = parseInt(numImages);
+
+     
+      if (isNaN(numberOfImages) || numberOfImages <= 0 || numberOfImages > 25) {
+        return api.sendMessage("Please specify a number between 1 and 25.", event.threadID, event.messageID);
+      }
+
+   
+      const apiUrl = `https://pin-two.vercel.app/pin?search=${encodeURIComponent(query)}`;
+      const response = await axios.get(apiUrl);
+      const imageData = response.data.result;
+
+     
+      if (!imageData || !Array.isArray(imageData) || imageData.length === 0) {
+        return api.sendMessage(`No images found for "${query}".`, event.threadID, event.messageID);
+      }
+
+    
+      const imgData = [];
+      for (let i = 0; i < Math.min(numberOfImages, imageData.length); i++) {
+        const imageUrl = imageData[i];
         try {
-            const w = await api.sendMessage("𝗪𝗮𝗶𝘁 𝗸𝗼𝗿𝗼 𝗯𝗮𝗯𝘆 🐤", event.threadID);
-            const response = await axios.get(
-                `${await baseApiUrl()}/pinterest?search=${encodeURIComponent(q)}&limit=${encodeURIComponent(length)}`,
-            );
-            const data = response.data.data;
-
-            if (!data || data.length === 0) {
-                return api.sendMessage(
-                    "Empty response or no images found.",
-                    event.threadID,
-                    event.messageID,
-                );
-            }
-
-            const diptoo = [];
-            const totalImagesCount = Math.min(data.length, parseInt(length));
-
-            for (let i = 0; i < totalImagesCount; i++) {
-                const imgUrl = data[i];
-                const imgResponse = await axios.get(imgUrl, {
-                    responseType: "arraybuffer",
-                });
-                const imgPath = path.join(
-                    __dirname,
-                    "dvassests",
-                    `${i + 1}.jpg`,
-                );
-                await fs.outputFile(imgPath, imgResponse.data);
-                diptoo.push(fs.createReadStream(imgPath));
-            }
-
-            await api.unsendMessage(w.messageID);
-            await api.sendMessage(
-                {
-                    body: `
-✅ | Here's Your images
-🐤 | Total Images Count: ${totalImagesCount}`,
-                    attachment: diptoo,
-                },
-                event.threadID,
-                event.messageID,
-            );
+          const imgResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+          const imgPath = path.join(__dirname, 'cache', `${i + 1}.jpg`);
+          await fs.outputFile(imgPath, imgResponse.data);
+          imgData.push(fs.createReadStream(imgPath));
         } catch (error) {
-            console.error(error);
-            await api.sendMessage(
-                `Error: ${error.message}`,
-                event.threadID,
-                event.messageID,
-            );
+          console.error(error);
         }
-    },
+      }
+
+     
+      await api.sendMessage({
+        attachment: imgData,
+        body: ``
+      }, event.threadID, event.messageID);
+    } catch (error) {
+      console.error(error);
+      return api.sendMessage(`An error occurred.`, event.threadID, event.messageID);
+    }
+  }
 };
