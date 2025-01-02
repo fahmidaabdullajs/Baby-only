@@ -1,28 +1,9 @@
-const mongoose = require('mongoose');
-
-// MongoDB URI for your database
-const dbUri = "mongodb+srv://mahmudabdullax7:ttnRAhj81JikbEw8@cluster0.zwknjau.mongodb.net/GoatBotV2?retryWrites=true&w=majority&appName=Cluster0";
-
-// MongoDB Schema to track user usage
-const userSchema = new mongoose.Schema({
-  userID: { type: String, required: true, unique: true },
-  usageCount: { type: Number, default: 0 }, // Number of times the user has used the command
-  lastUsedDate: { type: String, default: "" }, // Track last date used
-});
-
-// Check if the model is already defined to prevent overwriting
-const UserUsage = mongoose.models.UserUsage || mongoose.model('UserUsage', userSchema);
-
-// MongoDB Connection
-mongoose.connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
 module.exports = {
   config: {
     name: "slot",
     version: "1.0",
-    author: "Samir",
+    author: "xxx",
+    countDown: 10,
     shortDescription: {
       en: "Slot game",
     },
@@ -39,87 +20,78 @@ module.exports = {
       win_message: "Baby, You won $%1",
       lose_message: "Baby, You lost $%1",
       jackpot_message: "Jackpot! You won $%1 with three %2 symbols, buddy!",
-      usage_limit_reached: "❌ | You have reached the daily limit of 30 slots, Please try again tomorrow.",
       spin_count: ">🎀",
     },
   },
-  onStart: async function ({ args, message, event, envCommands, usersData, commandName, getLang }) {
+  onStart: async function ({ args, message, event, envCommands, usersData, commandName, getLang, api }) {
     const { senderID } = event;
+    const maxlimit = 15; // Maximum number of attempts allowed
+    const slotTimeLimit = 12 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+    const currentTime = new Date();
+
+    // Fetch user data
     const userData = await usersData.get(senderID);
 
-    // Get the current date in Bangladesh Standard Time (BST, UTC+6)
-    const currentDate = new Date();
-    const bstTime = currentDate.toLocaleString("en-US", { timeZone: "Asia/Dhaka" });
-    const [dateString] = bstTime.split(","); // Get only the date portion: "MM/DD/YYYY"
-
-    // Retrieve the user's daily slot usage statistics from MongoDB
-    let userStats = await UserUsage.findOne({ userID: senderID });
-    if (!userStats) {
-      // Create a new entry if the user doesn't exist in the database
-      userStats = new UserUsage({ userID: senderID, usageCount: 0, lastUsedDate: '' });
+    // Initialize slot attempts if they don't exist
+    if (!userData.data.slots) {
+      userData.data.slots = { count: 0, firstSlot: currentTime.getTime() };
     }
 
-    const { lastUsedDate, usageCount } = userStats;
+    const timeElapsed = currentTime.getTime() - userData.data.slots.firstSlot;
 
-    // If the date has changed (new day), reset the spin count and update the lastUsedDate
-    if (lastUsedDate !== dateString) {
-      // It's a new day, reset spin count
-      userStats.lastUsedDate = dateString;
-      userStats.usageCount = 1; // Start the new day with spin count as 1
-    } else {
-      // It's the same day, so increment the spin count
-      userStats.usageCount += 1;
+    // Reset slot count if 24 hours have passed
+    if (timeElapsed >= slotTimeLimit) {
+      userData.data.slots = { count: 0, firstSlot: currentTime.getTime() };
     }
 
-    // If the user has reached the daily limit of 30 spins, prevent more spins
-    if (userStats.usageCount > 30) {
-      return message.reply(getLang("usage_limit_reached"));
+    // Check if the user has exceeded the maximum slot attempts limit
+    if (userData.data.slots.count >= maxlimit) {
+      return api.sendMessage(
+        "❌ | You have reached your slot limit of 15 attempts, Please try again later.",
+        event.threadID,
+        event.messageID
+      );
     }
 
-    // Save the updated user data with the incremented spin count
-    await userStats.save();
-
-    // Show the current spin count used out of 30
-    const spinCountMessage = getLang("spin_count", userStats.usageCount);  // %1 will be replaced by the spin count
-
-    // Get the bet amount from the command args
+    // Get the amount the user wants to bet
     const amount = parseInt(args[0]);
 
-    // Validate the bet amount
-    if (isNaN(amount) || amount <= 0) {
-      return message.reply(getLang("invalid_amount"));
+    // Check if the user has enough money to place the bet
+    if (userData.money < amount) {
+      return api.sendMessage(
+        getLang("not_enough_money"),
+        event.threadID,
+        event.messageID
+      );
     }
 
-    // Check if the user has enough money for the bet
-    if (amount > userData.money) {
-      return message.reply(getLang("not_enough_money"));
-    }
+    // Increment the slot attempts count
+    userData.data.slots.count += 1;
 
-    // Slot symbols
+    // Save the updated user data
+    await usersData.set(senderID, { ...userData });
+
     const slots = ["❤", "💜", "🖤", "🤍", "🤎", "💙", "💚", "💛"];
     const slot1 = slots[Math.floor(Math.random() * slots.length)];
     const slot2 = slots[Math.floor(Math.random() * slots.length)];
     const slot3 = slots[Math.floor(Math.random() * slots.length)];
 
-    // Calculate winnings
     const winnings = calculateWinnings(slot1, slot2, slot3, amount);
 
     // Update the user's money after calculating winnings
     await usersData.set(senderID, {
       money: userData.money + winnings,
       data: userData.data,
-      slotStats: userStats, // Ensure slot stats are also updated
     });
 
-    // Get the result message based on the spin outcome
     const messageText = getSpinResultMessage(slot1, slot2, slot3, winnings, getLang);
 
-    // Return the message withSamecurrent spin count and game results
-    return message.reply(`${spinCountMessage}\n${messageText}`);
+    return message.reply(`${getLang("spin_count")}\n${messageText}`);
   },
 };
 
-// Function to calculate winnings based on slot results
+// Function to calculate winnings based on the slot results
 function calculateWinnings(slot1, slot2, slot3, betAmount) {
   if (slot1 === "❤" && slot2 === "❤" && slot3 === "❤") {
     return betAmount * 10;
@@ -134,20 +106,20 @@ function calculateWinnings(slot1, slot2, slot3, betAmount) {
   }
 }
 
-// Function to return the spin result message based on the outcome
+// Function to generate the message text based on the spin result
 function getSpinResultMessage(slot1, slot2, slot3, winnings, getLang) {
   if (winnings > 0) {
     if (slot1 === "❤" && slot2 === "❤" && slot3 === "❤") {
-      return getLang("jackpot_message", winnings, "❤");
+      return getLang("jackpot_message", formatMoney(winnings), "❤");
     } else {
-      return getLang("win_message", winnings) + `\nGame Results [ ${slot1} | ${slot2} | ${slot3} ]`;
+      return getLang("win_message", formatMoney(winnings)) + `\nGame Results [ ${slot1} | ${slot2} | ${slot3} ]`;
     }
   } else {
-    return getLang("lose_message", -winnings) + `\nGame Results [ ${slot1} | ${slot2} | ${slot3} ]`;
+    return getLang("lose_message", formatMoney(-winnings)) + `\nGame Results [ ${slot1} | ${slot2} | ${slot3} ]`;
   }
-  }
+}
 
-// Helper function to format large numbers with units
+// Function to format money with appropriate units
 function formatMoney(num) {
   const units = ["", "𝐊", "𝐌", "𝐁", "𝐓", "𝐐", "𝐐𝐢", "𝐒𝐱", "𝐒𝐩", "𝐎𝐜", "𝐍", "𝐃"];
   let unit = 0;
@@ -158,10 +130,6 @@ function formatMoney(num) {
     unit++;
   }
 
-  // Format large numbers with 1 or 2 decimal places
-  if (num >= 1000) {
-    return Number(num.toFixed(1)) + units[unit]; // Shows 1 decimal place
-  } else {
-    return Number(num.toFixed(1)) + units[unit]; // Shows 1 decimal place for smaller numbers too
+  // Format large numbers with 1 decimal place
+  return Number(num.toFixed(1)) + units[unit]; // Shows 1 decimal place
   }
-}
