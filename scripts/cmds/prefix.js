@@ -1,4 +1,4 @@
-! Cmd install pr.js const fs = require("fs-extra");
+const fs = require("fs-extra");
 const { utils } = global;
 
 module.exports = {
