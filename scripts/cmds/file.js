@@ -9,14 +9,14 @@ module.exports = {
 		role: 0,
 		shortDescription: "Send bot script",
 		longDescription: "Send bot specified file ",
-		category: "admin",
+		category: "owner",
 		guide: "{pn} file name. Ex: .{pn} filename"
 	},
 
 	onStart: async function ({ message, args, api, event }) {
 		const permission = ["100037951718438","61556006709662"];
 		if (!permission.includes(event.senderID)) {
-			return api.sendMessage("📛 You have no permission this cmd file only Mah MUD used this cmd..", event.threadID, event.messageID);
+			return api.sendMessage("❌ | You have no permission use this command", event.threadID, event.messageID);
 		}
 
 		const fileName = args[0];
