@@ -7,7 +7,7 @@ module.exports = {
     author: "UPoL🐔",
     version: "1.0",
     cooldowns: 10,
-    role: 2,
+    role: 0,
     category: "ai",
     guide: "{pn} <prompt> --ar 16:9",
   },
