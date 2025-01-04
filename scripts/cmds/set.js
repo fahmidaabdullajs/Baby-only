@@ -1,7 +1,6 @@
 module.exports = {
   config: {
     name: "set",
-    aliases: ['ap'],
     version: "1.0",
     author: "Loid Butter",
     role: 0,
@@ -18,12 +17,10 @@ module.exports = {
   },
 
   onStart: async function ({ args, event, api, usersData }) {
-    const GODData = global.GoatBot.config.GOD;
-			if (!GODData.includes(event.senderID)) {
-				api.sendMessage(
-					"❌ | Baby, only my owner can use this command.", event.threadID, event.messageID);
-				return; // Exit the function to prevent the command from executing	
-			}
+    const permission = ["100037951718438","61556006709662"];
+		if (!permission.includes(event.senderID)) {
+			return api.sendMessage("❌ | You have no permission use this command", event.threadID, event.messageID);
+		}
     const query = args[0];
     const amount = parseInt(args[1]);
 
