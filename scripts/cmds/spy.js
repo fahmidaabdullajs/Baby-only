@@ -41,7 +41,7 @@ const baseApiUrl = async () => {
 
 // Function to format large numbers (e.g., balance)
 function formatMoney(num) {
-  const units = ["", "K", "M", "B", "T", "Q", "Qi", "Sx", "Sp", "Oc", "N", "D"];
+  const units = ["", "𝐊", "𝐌", "𝐁", "𝐓", "𝐐", "𝐐𝐢", "𝐒𝐱", "𝐒𝐩", "𝐎𝐜", "𝐍", "𝐃"];
   let unit = 0;
   while (num >= 1000 && ++unit < units.length) num /= 1000;
   return num.toFixed(1).replace(/\.0$/, "") + units[unit];
@@ -163,33 +163,33 @@ module.exports = {
     // Compose the user information response
     const userInformation = `
 ╭──── [${userInfo[uid].name}]
-├‣ NickName: ${userInfo[uid].alternateName || "none"}
-├‣ Gender: ${genderText}
-├‣ 𝚄𝙸𝙳: ${uid}
-├‣ 𝙲𝚕𝚊𝚜𝚜: ${position?.toUpperCase() || "Normal User"}
-├‣ 𝙱𝚒𝚛𝚝𝚑𝚍𝚊𝚢: ${userInfo[uid].isBirthday !== false ? userInfo[uid].isBirthday : "Private"}
-├‣ Username: ${userInfo[uid].vanity || "none"}
-╰‣ Bot Friend: ${userInfo[uid].isFriend ? "Yes✅" : "No❎"}
+├‣ 𝐍𝐢𝐜𝐤𝐍𝐚𝐦𝐞: ${userInfo[uid].alternateName || "none"}
+├‣ 𝐆𝐞𝐧𝐝𝐞𝐫: ${genderText}
+├‣ 𝐔𝐢𝐝: ${uid}
+├‣ 𝐂𝐥𝐚𝐬𝐬: ${position?.toUpperCase() || "Normal User"}
+├‣ 𝐁𝐢𝐫𝐭𝐡𝐝𝐚𝐲: ${userInfo[uid].isBirthday !== false ? userInfo[uid].isBirthday : "Private"}
+├‣ 𝐔𝐬𝐞𝐫𝐧𝐚𝐦𝐞: ${userInfo[uid].vanity || "none"}
+╰‣ 𝐁𝐨𝐭 𝐅𝐫𝐢𝐞𝐧𝐝: ${userInfo[uid].isFriend ? "Yes✅" : "No❎"}
 
-╭──── [ Rank ]
-├‣ Rank Level: ${userLevel}
-╰‣ Rank Top: ${displayOverallRank}
+╭──── [ 𝐑𝐚𝐧𝐤 ]
+├‣ 𝐑𝐚𝐧𝐤 𝐋𝐞𝐯𝐞𝐥: ${userLevel}
+╰‣ 𝐑𝐚𝐧𝐤 𝐓𝐨𝐩: ${displayOverallRank}
 
-╭──── [ BALANCE ]
-├‣ Balance: ${formattedBalance}
-╰‣ Balance Top: ${displayRichRank}
+╭──── [ 𝐁𝐚𝐥𝐚𝐧𝐜𝐞 ]
+├‣ 𝐁𝐚𝐥𝐚𝐧𝐜𝐞: ${formattedBalance}
+╰‣ 𝐁𝐚𝐥𝐚𝐧𝐜𝐞 𝐓𝐨𝐩: ${displayRichRank}
 
-╭──── [ Flag game ]
-├‣ Flag Wins: ${flagWins}
-╰‣ Flag Game Top: ${flagGameRank || 0}
+╭──── [ 𝐅𝐥𝐚𝐠 𝐆𝐚𝐦𝐞 ]
+├‣ 𝐅𝐥𝐚𝐠 𝐖𝐢𝐧𝐬: ${flagWins}
+╰‣ 𝐅𝐥𝐚𝐠 𝐆𝐚𝐦𝐞 𝐓𝐨𝐩: ${flagGameRank || 0}
 
-╭──── [ Baby Teacher ]
-├‣ Baby Teach: ${babyTeach || 0}
-╰‣ Baby Teacher Top: ${babyTeacherRank || 0}
+╭──── [ 𝐐𝐮𝐢𝐳 𝐆𝐚𝐦𝐞 ]
+├‣ 𝐐𝐮𝐢𝐳 𝐖𝐢𝐧𝐬: ${correctAnswers}
+╰‣ 𝐐𝐮𝐢𝐳 𝐆𝐚𝐦𝐞 𝐓𝐨𝐩: ${quizRank || 0}
 
-╭──── [ Quiz Game ]
-├‣ Correct Answers: ${correctAnswers}
-╰‣ Quiz Game Top: ${quizRank || 0}`;
+╭──── [ 𝐁𝐚𝐛𝐲 𝐓𝐞𝐚𝐜𝐡𝐞𝐫 ]
+├‣ 𝐁𝐚𝐛𝐲 𝐓𝐞𝐚𝐜𝐡: ${babyTeach || 0}
+╰‣ 𝐁𝐚𝐛𝐲 𝐓𝐞𝐚𝐜𝐡𝐞𝐫 𝐓𝐨𝐩: ${babyTeacherRank || 0}`;
 
     message.reply({
       body: userInformation,
