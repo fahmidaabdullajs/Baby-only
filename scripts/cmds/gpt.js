@@ -13,7 +13,7 @@ module.exports.config = {
   description: "Gpt4 ai with multiple conversation",
   usePrefix: true,
   guide: "[message]",
-  category: "Ai",
+  category: "ai",
   countDown: 5,
 };
 module.exports.onReply = async function ({ api, event, Reply }) {
