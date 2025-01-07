@@ -19,9 +19,10 @@ module.exports = {
       invalid_user: "The specified user is invalid or not found",
       transfer_success: "✅ | Successfully sent money %1$ to %2",
       transfer_fail: "Failed to send balance. Please check the user tag and try again",
+      thread_only: "❌ 𝐎𝐧𝐥𝐲 𝐛𝐨𝐭 𝐒𝐮𝐩𝐩𝐨𝐫𝐭 𝐠𝐫𝐨𝐮𝐩 𝐰𝐨𝐫𝐤 𝐭𝐡𝐢𝐬 𝐜𝐨𝐦𝐦𝐚𝐧𝐝.\n\n𝐓𝐲𝐩𝐞 !joingc 𝐚𝐝𝐝 𝐭𝐨 𝐛𝐨𝐭 𝐬𝐮𝐩𝐩𝐨𝐫𝐭 𝐠𝐫𝐨𝐮𝐩.",
     },
   },
-  
+
   // Helper function to format large numbers with units
   formatMoney: function(num) {
     const units = ["", "𝐊", "𝐌", "𝐁", "𝐓", "𝐐", "𝐐𝐢", "𝐒𝐱", "𝐒𝐩", "𝐎𝐜", "𝐍", "𝐃"];
@@ -38,8 +39,14 @@ module.exports = {
   },
 
   onStart: async function ({ args, message, event, usersData, getLang }) {
-    const { senderID, mentions } = event;
+    const { senderID, mentions, threadID } = event;
+    const allowedThreadID = '7460623087375340'; // The thread ID where the command is allowed
     let recipientID, amount;
+
+    // Check if the command is being used in the correct thread
+    if (threadID !== allowedThreadID) {
+      return message.reply(getLang("thread_only"));
+    }
 
     // Define command aliases
     const commandAliases = {
