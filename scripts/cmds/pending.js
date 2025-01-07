@@ -1,101 +1,122 @@
 const { config } = global.GoatBot;
 const fs = require("fs-extra");
+const axios = require("axios");
 
-module.exports.config = {
-  name: "pending",
-  aliases: ["approve", "pen"],
-  version: "1.5",
-  author: "Dipto",
-  role: 0,
-  category: "general",
-  description: { 
-    en: "Accept pending Groups"
+module.exports = {
+  config: {
+    name: "pending",
+    aliases: ["pen", "approve"],
+    version: "1.7",
+    author: "Mah MUD",
+    countDown: 10,
+    role: 0,
+    category: "utility",
+    whiteListModeThread: {
+      whiteListThreadIds: [] // Store the whitelisted thread IDs
+    }
   },
-  countDown: 2,
-  guide: {
-    en: "{pn}"
-  }
-};
 
-module.exports.onStart = async ({ api, event, args, usersData }) => {
-  const directID = args[0];
-  if (directID) {
-    try {
-      const info = await api.getThreadInfo(directID);
-        const maleCount = info.userInfo.filter(user => user.gender === "MALE").length || 0;
-        const femaleCount = info.userInfo.filter(user => user.gender === "FEMALE").length || 0;
-        const otherCount = info.userInfo.length - maleCount - femaleCount || 0;
-        const groupDetails = `Accepted successfully 🎉🎉\n╭───✦ Group Info ✦───╮\n├‣ Name: ${info.name || 'none'}\n├‣ Thread ID: ${info.threadID || 'none'}\n├‣ Emoji: ${info.emoji || 'None'}\n├‣ Approval Mode: ${info.approvalMode ? 'Enabled' : 'Disabled'}\n├‣ Admins: ${info.adminIDs.length}\n├‣ Members: ${info.userInfo.length}\n├‣ Male: ${maleCount}\n├‣ Female: ${femaleCount}\n├‣ Other: ${otherCount}\n├‣ Invite Link: ${info.inviteLink && info.inviteLink.enable ? info.inviteLink.link : 'None'}\n╰────────────────────⧕`;
-        api.sendMessage(`✅ | Group approved successfully by ${await usersData.getName(event.senderID)}`, directID);
-if (config.whiteListModeThread.whiteListThreadIds.includes(directID)){
-      console.log("Already added in whitelistThread");
+  onReply: async function ({ message, api, event, Reply, usersData }) {
+    const allowedThreadID = '7460623087375340'; // The thread ID where the command is allowed
+    const { author, pending } = Reply;
+    
+    if (String(event.senderID) !== String(author)) return;
+    const { body, threadID, messageID } = event;
+
+    // Check if the command is being used in the correct thread
+    if (threadID !== allowedThreadID) {
+      return api.sendMessage("❌ 𝐎𝐧𝐥𝐲 𝐛𝐨𝐭 𝐒𝐮𝐩𝐩𝐨𝐫𝐭 𝐠𝐫𝐨𝐮𝐩 𝐰𝐨𝐫𝐤 𝐭𝐡𝐢𝐬 𝐜𝐨𝐦𝐦𝐚𝐧𝐝.\n\n𝐓𝐲𝐩𝐞 !joingc 𝐚𝐝𝐝 𝐭𝐨 𝐛𝐨𝐭 𝐬𝐮𝐩𝐩𝐨𝐫𝐭 𝐠𝐫𝐨𝐮𝐩.", threadID, messageID);
+    }
+
+    var count = 0;
+
+    if (isNaN(body) && (body.indexOf("c") === 0 || body.indexOf("cancel") === 0)) {
+      const index = body.slice(1).split(/\s+/);
+      for (const singleIndex of index) {
+        if (isNaN(singleIndex) || singleIndex <= 0 || singleIndex > pending.length)
+          return api.sendMessage(`[ ERR ] ${singleIndex} Not a valid number`, threadID, messageID);
       }
-    else{      config.whiteListModeThread.whiteListThreadIds.push(directID);
+      return api.sendMessage(`[ OK ] Successfully refused`, threadID, messageID);
+    } else {
+      const index = body.split(/\s+/);
+      for (const singleIndex of index) {
+        if (isNaN(singleIndex) || singleIndex <= 0 || singleIndex > pending.length)
+          return api.sendMessage(`❯ ${singleIndex} Not a valid number`, threadID, messageID);
+        api.unsendMessage(messageID);
+
+        api.changeNickname(
+          `[ Bot ]`,
+          pending[singleIndex - 1].threadID,
+          api.getCurrentUserID()
+        );
+        api.sendMessage(
+          { body: `Bot is now connected! Use !help to see the Command Lists` },
+          pending[singleIndex - 1].threadID
+        );
+
+        const approvedByName = await usersData.getName(event.senderID);
+        api.sendMessage(`✅ | 𝐆𝐫𝐨𝐮𝐩 𝐚𝐩𝐩𝐫𝐨𝐯𝐞𝐝 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐛𝐲 ${approvedByName}`, pending[singleIndex - 1].threadID);
+
+        const directID = pending[singleIndex - 1].threadID;
+        if (this.config.whiteListModeThread.whiteListThreadIds.includes(directID)) {
+          console.log("Already added in whitelistThread");
+        } else {
+          this.config.whiteListModeThread.whiteListThreadIds.push(directID);
+          console.log("Added to whitelist");
         }
-        return api.sendMessage(groupDetails, event.threadID, event.messageID);
-    } catch (error) {
-      return api.sendMessage(`🔍 Searching...\nSorry, the group with ID ${directID} was not found in pending or other groups.`, event.threadID, event.messageID);
-    }
-  }
 
-  try {
-    let ren = 100;
-    const pendingGroups = await api.getThreadList(ren, null, ['PENDING']);
-    const otherGroups = await api.getThreadList(ren, null, ['OTHER']);
-    const allGroups = [...pendingGroups, ...otherGroups];
-
-    const pendingNames = allGroups.map(group => group.threadName);
-    const pendingIDs = allGroups.map(group => group.threadID);
-
-    if (pendingNames.length === 0) {
-      return api.sendMessage("No pending or other groups found.", event.threadID, event.messageID);
-    }
-    let groups = `╭─✦ Pending and Other Groups ✦─╮\n`;
-    pendingNames.forEach((name, index) => {
-      groups += `├‣ ${index + 1}. ${name}\n├‣ Group ID: ${pendingIDs[index]}\n`;
-    });
-    groups += `╰───────────────────⧕\nReply to this message with the number of the group you want to accept.`;
-
-    api.sendMessage(groups, event.threadID, (error, info) => {
-global.GoatBot.onReply.set(info.messageID, {
-        commandName: this.config.name,
-        type: "reply",
-        messageID: info.messageID,
-        author: event.senderID,
-        pendingIDs: pendingIDs
-      });
-    }, event.messageID);
-
-  } catch (error) {
-    api.sendMessage(error.message, event.threadID, event.messageID);
-  }
-};
-
-module.exports.onReply = async ({ api, event, Reply,usersData }) => {
-  const { author, messageID, pendingIDs } = Reply;
-  if (event.senderID != author) return;
-  const choice = parseInt(event.body);
-  if (isNaN(choice) || choice < 1 || choice > pendingIDs.length) {
-    return api.sendMessage("Invalid choice. Please try again.", event.threadID, event.messageID);
-  }
-
-  const finalTid = pendingIDs[choice - 1];
-  try {
-    const info = await api.getThreadInfo(finalTid);
-
-    if (config.whiteListModeThread.whiteListThreadIds.includes(finalTid)){
-      console.log("Already added in whitelistThread");
+        count += 1;
       }
-    else{      config.whiteListModeThread.whiteListThreadIds.push(finalTid);
+
+      setTimeout(() => {
+        const replyData = global.GoatBot.onReply.get(info.messageID);
+        if (replyData) {
+          const { messageID } = replyData;
+          global.GoatBot.onReply.delete(messageID);
+          api.unsendMessage(messageID);
+        }
+      }, 5000);
+
+      return api.sendMessage(`✅ | 𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐚𝐩𝐩𝐫𝐨𝐯𝐞𝐝 ${count} 𝐭𝐡𝐫𝐞𝐚𝐝`, threadID, messageID);
     }
-    const maleCount = info.userInfo.filter(user => user.gender === "MALE").length || 0;
-    const femaleCount = info.userInfo.filter(user => user.gender === "FEMALE").length || 0;
-    const otherCount = info.userInfo.length - maleCount - femaleCount || 0;
-    const groupDetails = `Accepted Group🎉🎉🎉\n╭───✦ Group Info ✦───╮\n├‣ Name: ${info.name || 'none'}\n├‣ Thread ID: ${info.threadID || 'none'}\n├‣ Emoji: ${info.emoji || 'None'}\n├‣ Approval Mode: ${info.approvalMode ? 'Enabled' : 'Disabled'}\n├‣ Admins: ${info.adminIDs.length}\n├‣ Members: ${info.userInfo.length}\n├‣ Male: ${maleCount}\n├‣ Female: ${femaleCount}\n├‣ Other: ${otherCount}\n├‣ Goup photo:${info.imageSrc || 'none'}\n├‣ Invite Link: ${info.inviteLink && info.inviteLink.enable ? info.inviteLink.link : 'None'}\n╰───────────────────⧕`;
-    api.sendMessage(`✅ | Group approved successfully by ${await usersData.getName(event.senderID)}`, finalTid);
-    api.editMessage(groupDetails, messageID);
-  } catch (error) {
-    api.editMessage(`Sorry, ${error.message}`, messageID);
+  },
+
+  onStart: async function ({ message, api, event }) {
+    const allowedThreadID = '7460623087375340'; // The thread ID where the command is allowed
+    const { threadID, messageID } = event;
+    const commandName = this.config.name;
+    var msg = "", index = 1;
+
+    // Check if the command is being used in the correct thread
+    if (threadID !== allowedThreadID) {
+      return api.sendMessage("❌ 𝐎𝐧𝐥𝐲 𝐛𝐨𝐭 𝐒𝐮𝐩𝐩𝐨𝐫𝐭 𝐠𝐫𝐨𝐮𝐩 𝐰𝐨𝐫𝐤 𝐭𝐡𝐢𝐬 𝐜𝐨𝐦𝐦𝐚𝐧𝐝.\n\n𝐓𝐲𝐩𝐞 !joingc 𝐚𝐝𝐝 𝐭𝐨 𝐛𝐨𝐭 𝐬𝐮𝐩𝐩𝐨𝐫𝐭 𝐠𝐫𝐨𝐮𝐩.", threadID, messageID);
+    }
+
+    try {
+      var spam = await api.getThreadList(100, null, ["OTHER"]) || [];
+      var pending = await api.getThreadList(100, null, ["PENDING"]) || [];
+    } catch (e) {
+      return api.sendMessage("[ ERR ] can't get the current list", threadID, messageID);
+    }
+
+    const list = [...spam, ...pending].filter(group => group.isSubscribed && group.isGroup);
+
+    for (const single of list) {
+      const threadName = single.name || "Unknown";
+      msg += `${index++}: ${threadName}\n𝐓𝐢𝐝:${single.threadID}\n\n`;
+    }
+
+    if (list.length !== 0) {
+      return api.sendMessage(`📚 | 𝐓𝐨𝐭𝐚𝐥 𝐩𝐞𝐧𝐝𝐢𝐧𝐠 𝐠𝐫𝐨𝐮𝐩: ${list.length} \n${msg}\n\n𝐑𝐞𝐩𝐥𝐲 𝐭𝐨 𝐭𝐡𝐞 𝐨𝐫𝐝𝐞𝐫 𝐧𝐮𝐦𝐛𝐞𝐫 𝐛𝐞𝐥𝐨𝐰 𝐭𝐨 𝐚𝐩𝐩𝐫𝐨𝐯𝐞`, threadID, (error, info) => {
+        global.GoatBot.onReply.set(info.messageID, {
+          commandName,
+          messageID: info.messageID,
+          author: event.senderID,
+          pending: list
+        });
+      }, messageID);
+    } else {
+      return api.sendMessage("There are currently no groups in the queue", threadID, messageID);
+    }
   }
-  global.GoatBot.onReply.delete(messageID);
 };
