@@ -14,7 +14,7 @@ module.exports = {
     description: "Deposit, withdraw money, and earn interest",
     guide: {
       vi: "",
-      en: "{pn}Bank:\n- Interest - Balance\n- Withdraw - Deposit\n- Transfer - Top",
+      en: "{pn}Bank:\n - Interest\n - Balance\n - Withdraw\n - Deposit\n - Transfer\n - Top\n - Loan\n - Payloan",
     },
     category: "economy",
     countDown: 3,
@@ -248,11 +248,11 @@ if (command === "interest") {
     const remainingHours = Math.floor(remainingTime / 3600);
     const remainingMinutes = Math.floor((remainingTime % 3600) / 60);
 
-    return message.reply(`╔════ஜ۩۞۩ஜ═══╗\n\n[🏦 Bank 🏦]\n\n❏You can claim interest again in ${remainingHours} hours and ${remainingMinutes} minutes 😉•\n\n╚════ஜ۩۞۩ஜ═══╝`);
+    return message.reply(`[🏦 Bank 🏦]\n\n❌ You can claim interest again in ${remainingHours} hours and ${remainingMinutes} minutes`);
   }
 
   if (bankData.bank <= 0) {
-    return message.reply("╔════ஜ۩۞۩ஜ═══╗\n\n[🏦 Bank 🏦]\n\n❏You don't have any money in your bank account to earn interest 💸🥱•\n\n╚════ஜ۩۞۩ஜ═══╝");
+    return message.reply("[🏦 Bank 🏦]\n\n❌ You don't have any money in your bank account to earn interest");
   }
 
   // Calculate daily interest
@@ -267,10 +267,51 @@ if (command === "interest") {
     }
   );
 
-  return message.reply(`╔════ஜ۩۞۩ஜ═══╗\n\n[🏦 Bank 🏦]\n\n❏You have earned interest of $${formatMoney(interestEarned)}\n\nIt has been successfully added to your account balance ✅•\n\n╚════ஜ۩۞۩ஜ═══╝`);
+  return message.reply(`[🏦 Bank 🏦]\n\n✅ You have earned interest of $${formatMoney(interestEarned)}`);
+}
+
+if (command === "loan") {
+  const maxLoanAmount = 100000; // Max loan amount can be adjusted
+  const amount = parseInt(args[1]); // Loan amount from user input
+
+  // Ensure the user entered a valid loan amount
+  if (isNaN(amount) || amount <= 0) {
+    return message.reply("[🏦 Bank 🏦]\n\n❌ Please enter a valid loan amount");
+  }
+
+  // Check if the loan amount exceeds the maximum limit
+  if (amount > maxLoanAmount) {
+    return message.reply(`[🏦 Bank 🏦]\n\n❌ The maximum loan amount is $${formatMoney(maxLoanAmount)}.`);
+  }
+
+  // Fetch the user's bank data to check for existing loans
+  const bankData = await bankCollection.findOne({ userId });
+  
+  if (!bankData) {
+    return message.reply("[🏦 Bank 🏦]\n\n❌ No bank data found for this user. Please try again later.");
+  }
+
+  const userLoan = bankData.loan || 0; // Current loan balance
+  const loanPayed = bankData.loanPayed !== undefined ? bankData.loanPayed : true; // Check if previous loan was paid off
+
+  // Ensure the user has paid off any existing loans
+  if (!loanPayed && userLoan > 0) {
+    return message.reply(`[🏦 Bank 🏦]\n\n❌ You cannot take a new loan until you pay off your current loan.\n\nYour current loan to pay: $${formatMoney(userLoan)}.`);
+  }
+
+  // If eligible, add the loan amount to the user's balance and update the loan information
+  const newLoanBalance = userLoan + amount;
+  await bankCollection.updateOne(
+    { userId },
+    { 
+      $set: { loan: newLoanBalance, loanPayed: false }, // Mark loan as unpaid
+      $inc: { bank: amount } // Add loan amount to the bank balance
+    }
+  );
+
+  return message.reply(`[🏦 Bank 🏦]\n\n✅ You have successfully taken a loan of $${formatMoney(amount)}. Please note that loans must be repaid within a certain period.`);
 }
 	    
-// Payloan command
 if (command === "payloan") {
   const amount = parseInt(args[1]); // Loan repayment amount
   const bankData = await bankCollection.findOne({ userId });
@@ -283,31 +324,33 @@ if (command === "payloan") {
   const loanBalance = bankData.loan || 0; // The user's current loan balance
 
   if (isNaN(amount) || amount <= 0) {
-    return message.reply("╔════ஜ۩۞۩ஜ═══╗\n\n[🏦 Bank 🏦]\n\n❏Please enter a valid amount to repay your loan ✖️•\n\n╚════ஜ۩۞۩ஜ═══╝");
+    return message.reply("[🏦 Bank 🏦]\n\n❌ Please enter a valid amount to repay your loan");
   }
 
   if (loanBalance <= 0) {
-    return message.reply("╔════ஜ۩۞۩ஜ═══╗\n\n[🏦 Bank 🏦]\n\n❏You don't have any pending loan payments•\n\n✧⁺⸜(●˙▾˙●)⸝⁺✧ʸᵃʸ\n\n╚════ஜ۩۞۩ஜ═══╝");
+    return message.reply("[🏦 Bank 🏦]\n\n❌ You don't have any pending loan payments");
   }
 
   if (amount > loanBalance) {
-    return message.reply(`╔════ஜ۩۞۩ஜ═══╗\n\n[🏦 Bank 🏦]\n\n❏The amount required to pay off the loan is greater than your due amount. Please pay the exact amount 😊•\nYour total loan: $${loanBalance}\n\n╚════ஜ۩۞۩ஜ═══╝`);
+    return message.reply(`[🏦 Bank 🏦]\n\n❌ The amount required to pay off the loan is greater than your due amount. Please pay the exact amount\nYour total loan: $${loanBalance}.`);
   }
 
   const userMoney = await usersData.get(event.senderID, "money"); // User's current balance
   
   if (amount > userMoney) {
-    return message.reply(`╔════ஜ۩۞۩ஜ═══╗\n\n[🏦 Bank 🏦]\n\n❏You do not have $${amount} in your balance to repay the loan 😢•\n\n╚════ஜ۩۞۩ஜ═══╝`);
+    return message.reply(`[🏦 Bank 🏦]\n\n❌ You do not have $${amount} in your balance to repay to loan`);
   }
 
   // Update the loan balance in MongoDB
   const updatedLoanBalance = loanBalance - amount;
 
+  // Update loan status: if the loan is fully paid, mark as paid
+  const loanPayedStatus = updatedLoanBalance === 0;
+
   await bankCollection.updateOne(
     { userId }, 
     { 
-      $set: { loan: updatedLoanBalance }, // Update the user's loan balance
-      $set: { loanPayed: updatedLoanBalance === 0 } // Mark the loan as paid if the balance is 0
+      $set: { loan: updatedLoanBalance, loanPayed: loanPayedStatus }, // Update loan balance and status
     }
   );
 
@@ -316,8 +359,13 @@ if (command === "payloan") {
     money: userMoney - amount // Deduct the repayment amount from the user's balance
   });
 
-  return message.reply(`╔════ஜ۩۞۩ஜ═══╗\n\n[🏦 Bank 🏦]\n\n❏Successfully repaid $${amount} towards your loan. Your current loan to pay: $${updatedLoanBalance} ✅•\n\n╚════ஜ۩۞۩ஜ═══╝`);
-      }
+  // Return updated message
+  if (loanPayedStatus) {
+    return message.reply(`[🏦 Bank 🏦]\n\n✅ You have successfully repaid your loan of $${amount}. Your loan is now fully paid off.`);
+  } else {
+    return message.reply(`[🏦 Bank 🏦]\n\n✅ Successfully repaid $${amount} towards your loan. Your current loan to pay: $${updatedLoanBalance}.`);
+  }
+}
 	
       // Top command (Display top 10 richest users)
       if (command === "top") {
@@ -364,4 +412,4 @@ function formatMoney(num) {
   } else {
     return Number(num.toFixed(1)) + units[unit]; // Shows 1 decimal place for smaller numbers too
   }
-  }
+	      }
