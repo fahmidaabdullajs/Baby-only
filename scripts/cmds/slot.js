@@ -21,6 +21,8 @@ module.exports = {
       lose_message: "Baby, You lost $%1",
       jackpot_message: "Jackpot! You won $%1 with three %2 symbols, buddy!",
       spin_count: ">🎀",
+      wrong_use_message: "❌ | WRONG use: Please enter a valid and positive number as your bet amount.",
+      time_left_message: "❌ | 𝐘𝐨𝐮 𝐡𝐚𝐯𝐞 𝐫𝐞𝐚𝐜𝐡𝐞𝐝 𝐲𝐨𝐮𝐫 𝐬𝐥𝐨𝐭 𝐥𝐢𝐦𝐢𝐭 𝐨𝐟 𝐦𝐚𝐱𝐚𝐭𝐭𝐞𝐦𝐩𝐭𝐬. 𝐏𝐥𝐞𝐚𝐬𝐞 𝐭𝐫𝐲 𝐚𝐠𝐚𝐢𝐧 𝐢𝐧 %1𝐡 %2𝐦.",
     },
   },
   onStart: async function ({ args, message, event, envCommands, usersData, commandName, getLang, api }) {
@@ -47,8 +49,12 @@ module.exports = {
 
     // Check if the user has exceeded the maximum slot attempts limit
     if (userData.data.slots.count >= maxlimit) {
+      // Calculate time left for the user to try again
+      const timeLeft = slotTimeLimit - timeElapsed;
+      const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+      const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
       return api.sendMessage(
-        "❌ | You have reached your slot limit of 15 attempts, Please try again later.",
+        getLang("time_left_message", hoursLeft, minutesLeft),
         event.threadID,
         event.messageID
       );
@@ -56,6 +62,15 @@ module.exports = {
 
     // Get the amount the user wants to bet
     const amount = parseInt(args[0]);
+
+    // Check if the bet amount is valid and positive
+    if (isNaN(amount) || amount <= 0) {
+      return api.sendMessage(
+        getLang("wrong_use_message"),
+        event.threadID,
+        event.messageID
+      );
+    }
 
     // Check if the user has enough money to place the bet
     if (userData.money < amount) {
@@ -132,4 +147,4 @@ function formatMoney(num) {
 
   // Format large numbers with 1 decimal place
   return Number(num.toFixed(1)) + units[unit]; // Shows 1 decimal place
-  }
+    }
