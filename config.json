@@ -86,7 +86,13 @@
     "whiteListThreadIds": [
       "9029931040387159",
       "7460623087375340",
-      "9160826270616451"
+      "9160826270616451",
+      "27217044317880907",
+      "7511184802316171",
+      "8268366293285158", 
+      "26048720274771736", 
+      "7350950101677539",
+      "8378684108842272"
     ],
     "notes": "if you enable this feature, only the thread in the whiteListThreadIds list can use the bot",
     "how_it_work": "if you enable both whiteListMode and whiteListModeThread, the system will check if the user is in whiteListIds, then check if the thread is in whiteListThreadIds, if one of the conditions is true, the user can use the bot"
