@@ -147,4 +147,4 @@ function formatMoney(num) {
 
   // Format large numbers with 1 decimal place
   return Number(num.toFixed(1)) + units[unit]; // Shows 1 decimal place
-    }
+}
