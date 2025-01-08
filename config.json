@@ -27,7 +27,9 @@
     "61563316546264",
     "61566782632159",
     "100065343379315",
-    "100069254151118"
+    "100069254151118",
+    "100023650480365",
+    "61570937267626"
   ],
   "GOD": [
     "61556006709662",
@@ -61,7 +63,22 @@
     "61550952520786",
     "100069254151118",
     "61565237157571",
-    "61571038690361"
+    "61571038690361",
+    "100023650480365",
+    "61570937267626",
+    "100084482768337",
+    "61570254908013",
+    "61564812246999",
+    "61570016022047",
+    "61557601379931",
+    "61567731959342",
+    "61561732815089",
+    "61557416366151",
+    "61565968767357",
+    "61554139815784",
+    "61566352742825",
+    "61571190549551",
+    "61558981924496"
   ],
   "api": "https://www.noobs-api.000.pe/dipto",
   "apis": "https://www.noobs-api.000.pe/dipto",
@@ -70,7 +87,7 @@
   "tv": "https://049c-34-100-213-170.ngrok-free.app/dipto",
   "rubishapi": "https://rubish-apihub.onrender.com/rubish",
   "whiteListMode": {
-    "enable": false,
+    "enable": true,
     "whiteListIds": [
       "61567289070129",
       "61570199254708",
@@ -85,20 +102,31 @@
     "enable": true,
     "whiteListThreadIds": [
       "9029931040387159",
+      "25483939884584824",
+      "8573825599294888",
+      "8829184770500107",
+      "8717262195035108",
+      "7568880113162476",
       "7460623087375340",
+      "8609598679073393",
       "9160826270616451",
       "27217044317880907",
       "7511184802316171",
-      "8268366293285158", 
-      "26048720274771736", 
+      "8268366293285158",
+      "26048720274771736",
       "7350950101677539",
-      "8378684108842272"
+      "8378684108842272",
+      "9608786135804407",
+      "25194015366912103",
+      "8433760913367745",
+      "8209398875777726",
+      "26791290970519735"
     ],
     "notes": "if you enable this feature, only the thread in the whiteListThreadIds list can use the bot",
     "how_it_work": "if you enable both whiteListMode and whiteListModeThread, the system will check if the user is in whiteListIds, then check if the thread is in whiteListThreadIds, if one of the conditions is true, the user can use the bot"
   },
   "database": {
-    "type": "mongodb",
+    "type": "sqlite",
     "uriMongodb": "mongodb+srv://mahmudabdullax7:ttnRAhj81JikbEw8@cluster0.zwknjau.mongodb.net/GoatBotV2?retryWrites=true&w=majority&appName=Cluster0",
     "autoSyncWhenStart": false,
     "autoRefreshThreadInfoFirstTime": true,
