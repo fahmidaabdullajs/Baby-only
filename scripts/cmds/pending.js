@@ -45,7 +45,7 @@ module.exports = {
         api.unsendMessage(messageID);
 
         api.changeNickname(
-          `[ Bot ]`,
+          `Your Baby`,
           pending[singleIndex - 1].threadID,
           api.getCurrentUserID()
         );
