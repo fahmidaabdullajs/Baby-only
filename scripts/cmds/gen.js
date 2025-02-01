@@ -31,23 +31,31 @@ module.exports = {
     const prompt = args.join(" ");
     const genApiUrl = `https://www.samirxpikachu.run.place/mageDef?prompt=${encodeURIComponent(prompt)}`;
 
-    api.sendMessage("⏳ | Please wait, we're making your picture.", event.threadID, event.messageID);
+    api.sendMessage("⏳ | Please wait, we're making your pictures.", event.threadID, event.messageID);
 
     try {
-      const genResponse = await axios.get(genApiUrl, { responseType: "arraybuffer" });
+      const imagePaths = [];
 
-      const cacheFolderPath = path.join(__dirname, "/cache");
-      if (!fs.existsSync(cacheFolderPath)) {
-        fs.mkdirSync(cacheFolderPath);
+      // Generate 4 images
+      for (let i = 0; i < 4; i++) {
+        const genResponse = await axios.get(genApiUrl, { responseType: "arraybuffer" });
+        const cacheFolderPath = path.join(__dirname, "/cache");
+        if (!fs.existsSync(cacheFolderPath)) {
+          fs.mkdirSync(cacheFolderPath);
+        }
+        const imagePath = path.join(cacheFolderPath, `${Date.now()}_generated_image_${i}.png`);
+        fs.writeFileSync(imagePath, Buffer.from(genResponse.data, "binary"));
+        imagePaths.push(imagePath);
       }
-      const imagePath = path.join(cacheFolderPath, `${Date.now()}_generated_image.png`);
-      fs.writeFileSync(imagePath, Buffer.from(genResponse.data, "binary"));
 
-      const stream = fs.createReadStream(imagePath);
+      // Send all images
+      const attachments = imagePaths.map(imagePath => fs.createReadStream(imagePath));
+
       message.reply({
-        body: "",
-        attachment: stream
+        body: "Here are your generated images:",
+        attachment: attachments
       });
+
     } catch (error) {
       console.error("Error:", error);
       message.reply("❌ | An error occurred. Please try again later.");
