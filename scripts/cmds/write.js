@@ -5,91 +5,100 @@ const { createCanvas, loadImage } = require("canvas");
 module.exports = {
   config: {
     name: "write",
-    aliases: ["textonimage"],
-    version: "1.0",
-    author: "RL", // if you change it, then you are a pure gay
+    aliases: ["wr"],
+    version: "1.8",
+    author: "RL", 
     countDown: 5,
     role: 0,
-    shortDescription: {
-      en: "Write text on a replied image"
-    },
-    longDescription: {
-      en: "Writes text on a replied image and sends it back."
-    },
+    shortDescription: { en: "Write text on a replied image with auto-sized text" },
+    longDescription: { en: "Writes auto-sized text on a replied image with the selected color and sends it back." },
     category: "image",
-    guide: {
-      en: "{p}write <text>"
+    guide: { 
+      en: "{p}write3 [color] - <text>\n\nUse `{p}write3 list` to see available colors. If no color is provided, white will be used by default." 
     }
   },
 
   onStart: async function ({ api, event, args }) {
-    const { threadID, messageID, senderID, body } = event;
+    const { threadID, messageID } = event;
 
-    // Ensure that text is provided
-    let text = args.join(" ");
-    if (!text) {
-      return api.sendMessage("Please provide text to write.", threadID, messageID);
+    const colorMap = {
+      b: "black",
+      w: "white",
+      r: "red",
+      bl: "blue",
+      g: "green",
+      y: "yellow",
+      o: "orange",
+      p: "purple",
+      pk: "pink"
+    };
+
+    if (args[0]?.toLowerCase() === "list") {
+      return api.sendMessage(
+        `🎨 Available colors:\n${Object.entries(colorMap).map(([short, full]) => `${short} → ${full}`).join("\n")}\n\nIf no color is specified, white will be used by default.`,
+        threadID,
+        messageID
+      );
     }
 
-    // Ensure the user has replied to an image
-    if (!event.messageReply || !event.messageReply.attachments || event.messageReply.attachments.length === 0) {
+    let input = args.join(" ");
+    let color, text;
+
+    if (input.includes(" - ")) {
+      [color, text] = input.split(" - ").map(item => item.trim());
+      color = colorMap[color.toLowerCase()] || color.toLowerCase();
+      if (!Object.values(colorMap).includes(color)) color = "white"; 
+    } else {
+      color = "white";
+      text = input.trim();
+    }
+
+    if (!text) return api.sendMessage("Please provide text to write.", threadID, messageID);
+
+    if (!event.messageReply?.attachments?.[0]?.url) {
       return api.sendMessage("Please reply to an image.", threadID, messageID);
     }
 
-    // Get image URL from the reply
     const imageUrl = event.messageReply.attachments[0].url;
 
-    // Request the image and load it
-    request(imageUrl, { encoding: null }, async (error, response, body) => {
-      if (error) {
-        return api.sendMessage("Error downloading the image.", threadID, messageID);
-      }
+    request({ url: imageUrl, encoding: null }, async (error, response, body) => {
+      if (error) return api.sendMessage("Error downloading the image.", threadID, messageID);
 
       try {
-        const img = await loadImage(body);
-
-        // Create a canvas and draw the image on it
+        const img = await loadImage(Buffer.from(body));
         const canvas = createCanvas(img.width, img.height);
         const ctx = canvas.getContext("2d");
 
         ctx.drawImage(img, 0, 0);
 
-        // Set text properties (optional adjustment for simple layout)
-        ctx.font = "30px Arial";
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
+        let fontSize = Math.floor(img.width / 10);
+        ctx.font = `${fontSize}px "Segoe UI Emoji"`;
 
-        // Calculate text size based on image dimensions to prevent text from exceeding
-        const padding = 10;
-        const textWidth = ctx.measureText(text).width;
-
-        if (textWidth > img.width - 2 * padding) {
-          // If the text is too wide, scale down the font size
-          let fontSize = 30;
-          while (ctx.measureText(text).width > img.width - 2 * padding && fontSize > 10) {
-            fontSize--;
-            ctx.font = `${fontSize}px Arial`;
-          }
+        while (ctx.measureText(text).width > img.width * 0.9) { 
+          fontSize--;
+          ctx.font = `${fontSize}px "Segoe UI Emoji"`;
+          if (fontSize < 10) break;
         }
 
-        // Set text position near the bottom of the image
-        const x = canvas.width / 2;
-        const y = canvas.height - 40; // Adjust vertical positioning
+        ctx.fillStyle = color;
+        ctx.textAlign = "center";
 
-        // Render text on the image
+        const x = canvas.width / 2;
+        const y = canvas.height - fontSize * 1.5;
+
         ctx.fillText(text, x, y);
 
-        // Save to temporary path and send image
         const tempFilePath = __dirname + "/tmp/modified_image.png";
+        await fs.ensureDir(__dirname + "/tmp");
         const out = fs.createWriteStream(tempFilePath);
         const stream = canvas.createPNGStream();
         stream.pipe(out);
 
         out.on("finish", () => {
           api.sendMessage(
-            { body: "", attachment: fs.createReadStream(tempFilePath) },
+            { attachment: fs.createReadStream(tempFilePath) },
             threadID,
-            () => fs.unlinkSync(tempFilePath), // Clean up temp file
+            () => fs.unlinkSync(tempFilePath),
             messageID
           );
         });
