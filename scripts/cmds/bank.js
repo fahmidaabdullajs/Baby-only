@@ -28,11 +28,12 @@ module.exports = {
 
     const commandAliases = {
       "bal": "balance",
-      "to": "top",
-      "depo": "deposit",
-      "wd": "withdraw", // Short for withdraw
+      "-d": "deposit",
+      "-w": "withdraw", // Short for withdraw
       "int": "interest", // Short for interest
-      "-t": "transfer" // Short for transfer
+      "-t": "transfer", // Short for transfer
+      "l": "loan",
+      "pl": "payloan"
     };
 
     const command = commandAliases[args[0]?.toLowerCase()] || args[0]?.toLowerCase();
@@ -56,11 +57,40 @@ module.exports = {
       const bankBalance = bankData.bank || 0;
       const amount = parseInt(args[1]);
 
-      // Balance command
-      if (command === "balance") {
-        return message.reply(`[🏦 Bank 🏦]\n\nYour bank balance is: ${formatMoney(bankBalance || 0)}.`);
-      }
+     if (command === "balance") {
+    if (event.type === "message_reply") {
+        const reply = event.messageReply;
+        const userID = reply.senderID;
+        const userName = reply.senderName || (await usersData.get(userID, "name")) || "Unknown User";
+        let repliedUserBankData = await bankCollection.findOne({ userId: parseInt(userID) });
+        if (!repliedUserBankData) {
+            repliedUserBankData = { userId: parseInt(userID), bank: 0, lastInterestClaimed: Date.now() };
+            await bankCollection.insertOne(repliedUserBankData);
+        }
+        const repliedUserBankBalance = repliedUserBankData.bank || 0;
+        return message.reply(`[🏦 Bank 🏦]\n\n${userName}'s bank balance is: ${formatMoney(repliedUserBankBalance)}.`);
+    }
 
+    if (Object.keys(event.mentions).length > 0) {
+        const uids = Object.keys(event.mentions);
+        const mentionsBalances = await Promise.all(
+            uids.map(async (uid) => {
+                const userName = event.mentions[uid] || (await usersData.get(uid, "name")) || "Unknown User";
+                let userBankData = await bankCollection.findOne({ userId: parseInt(uid) });
+                if (!userBankData) {
+                    userBankData = { userId: parseInt(uid), bank: 0, lastInterestClaimed: Date.now() };
+                    await bankCollection.insertOne(userBankData);
+                }
+                const userBankBalance = userBankData.bank || 0;
+                return `${userName}'s bank balance is: ${formatMoney(userBankBalance)}`;
+            })
+        );
+        return message.reply(`[🏦 Bank 🏦]\n\n${mentionsBalances.join("\n")}`);
+    }
+
+    return message.reply(`[🏦 Bank 🏦]\n\nYour bank balance is: ${formatMoney(bankBalance || 0)}.`);
+     }
+	    
       // Deposit command
       if (command === "deposit") {
         console.log("Processing deposit...");
@@ -84,6 +114,20 @@ module.exports = {
         }
       }
 
+// Withdraw command
+      if (command === "withdraw") {
+        if (isNaN(amount) || amount <= 0) {
+          return message.reply("[🏦 Bank 🏦]\n\n❌ Please enter the correct amount to withdraw");
+        }
+        if (amount > bankBalance) {
+          return message.reply("[🏦 Bank 🏦]\n\n❌ Insufficient bank balance to withdraw.");
+        }
+        await bankCollection.updateOne({ userId }, { $inc: { bank: -amount } });
+        await usersData.set(event.senderID, { money: userMoney + amount });
+        return message.reply(`[🏦 Bank 🏦]\n\n✅ Successfully withdrew $${amount} from your bank account`);
+      }
+
+	
 // set command to manually set a user's bank balance
 if (command === "set") {
   if (args.length < 3) {
@@ -149,92 +193,61 @@ if (command === "set") {
   return message.reply(responseMessage);
 	    }	    
 	    
-      // Transfer command
-      if (command === "transfer") {
-        let recipientID;
-        let transferAmount;
+if (command === "transfer") {
+  let recipientID;
+  let transferAmount;
 
-        // Check if there are mentions in the event
-        if (event.mentions && Object.keys(event.mentions).length > 0) {
-          // Get the first mentioned user ID
-          recipientID = Object.keys(event.mentions)[0];
-          
-          // Find the amount by looking through the args for the first number
-          transferAmount = parseInt(args.find(arg => !isNaN(arg)));
-        } else {
-          // If no mentions, use the first argument as recipient ID and second as amount
-          recipientID = args[0];
-          transferAmount = parseInt(args[1]);
-        }
+  // Check for mentions first
+  if (event.mentions && Object.keys(event.mentions).length > 0) {
+    // Use the first mentioned user
+    recipientID = Object.keys(event.mentions)[0];
+    transferAmount = parseInt(args[args.length - 1]); // Last argument as amount
+  } else if (event.messageReply && event.messageReply.senderID) {
+    // Use the user ID of the replied-to message sender
+    recipientID = event.messageReply.senderID;
+    transferAmount = parseInt(args[args.length - 1]); // Last argument as amount
+  } else {
+    // Use direct args for recipient and amount
+    recipientID = args[0];
+    transferAmount = parseInt(args[args.length - 1]); // Last argument as amount
+  }
 
-        // Ensure the amount is valid
-        if (isNaN(transferAmount) || transferAmount <= 0) {
-          return message.reply("[🏦 Bank 🏦]\n\n❌ Please enter a valid amount to transfer");
-        }
+  // Validate inputs
+  if (isNaN(transferAmount) || transferAmount <= 0) {
+    return message.reply("[🏦 Bank 🏦]\n\n❌ Please enter a valid amount to transfer.");
+  }
+  if (!recipientID) {
+    return message.reply("[🏦 Bank 🏦]\n\n❌ Please specify the recipient by replying to their message, mentioning them, or providing their user ID.");
+  }
+  if (parseInt(recipientID) === userId) {
+    return message.reply("[🏦 Bank 🏦]\n\n❌ You cannot transfer money to yourself.");
+  }
 
-        // Ensure recipientID is valid
-        if (!recipientID) {
-          return message.reply("[🏦 Bank 🏦]\n\n❌ Please specify the recipient's user ID or mention someone to transfer money to");
-        }
+  // Fetch recipient's bank data
+  let recipientBankData = await bankCollection.findOne({ userId: parseInt(recipientID) });
+  if (!recipientBankData) {
+    await bankCollection.insertOne({ userId: parseInt(recipientID), bank: 0, lastInterestClaimed: Date.now() });
+    recipientBankData = { userId: parseInt(recipientID), bank: 0 };
+  }
 
-        // Fetch recipient's bank data
-        const recipientBankData = await bankCollection.findOne({ userId: parseInt(recipientID) });
-        if (!recipientBankData) {
-          // If the recipient doesn't have bank data, create it
-          console.log(`Recipient ${recipientID} not found in bank data. Creating new record.`);
-          await bankCollection.insertOne({ userId: parseInt(recipientID), bank: 0, lastInterestClaimed: Date.now() });
-        }
+  // Check sender's balance
+  if (transferAmount > bankBalance) {
+    return message.reply("[🏦 Bank 🏦]\n\n❌ You don't have enough funds in your bank account.");
+  }
 
-        // Check if the recipient is the sender (can't transfer money to yourself)
-        if (parseInt(recipientID) === userId) {
-          return message.reply("[🏦 Bank 🏦]\n\n❌ You cannot transfer money to yourself");
-        }
+  // Update sender's and recipient's balances
+  await bankCollection.updateOne({ userId }, { $inc: { bank: -transferAmount } });
+  await bankCollection.updateOne({ userId: parseInt(recipientID) }, { $inc: { bank: transferAmount } });
 
-        const senderBankBalance = bankData.bank || 0;
-        const recipientBankBalance = recipientBankData.bank || 0;
+  // Fetch recipient's name for confirmation
+  const recipientInfo = await api.getUserInfo(recipientID);
+  const recipientName = recipientInfo[recipientID]?.name || "Unknown User";
 
-        // Prevent transfer if recipient's bank balance is too high (safety check)
-        if (recipientBankBalance >= 1e104) {
-          return message.reply("[🏦 Bank 🏦]\n\n❌ The recipient's bank balance is already $1e104. You cannot transfer money to them");
-        }
-
-        // Check if sender has enough funds
-        if (transferAmount > senderBankBalance) {
-          return message.reply("[🏦 Bank 🏦]\n\n❌ You don't have enough money in your bank account for this transfer");
-        }
-
-        // Fetch recipient's name from the user info API
-        const recipientInfo = await api.getUserInfo(recipientID);
-        const recipientName = recipientInfo[recipientID]?.name || "Unknown User"; // Fallback if name not found
-
-        // Update sender's and recipient's bank balance in the database
-        await bankCollection.updateOne(
-          { userId: userId },
-          { $inc: { bank: -transferAmount } }
-        );
-        await bankCollection.updateOne(
-          { userId: parseInt(recipientID) },
-          { $inc: { bank: transferAmount } }
-        );
-
-        // Notify user of successful transfer with recipient's name only (no UID)
-        return message.reply(`[🏦 Bank 🏦]\n\n✅ Successfully transferred $${transferAmount} to ${recipientName}`);
-      }
-
-      // Withdraw command
-      if (command === "withdraw") {
-        if (isNaN(amount) || amount <= 0) {
-          return message.reply("[🏦 Bank 🏦]\n\n❌ Please enter the correct amount to withdraw");
-        }
-        if (amount > bankBalance) {
-          return message.reply("[🏦 Bank 🏦]\n\n❌ Insufficient bank balance to withdraw.");
-        }
-        await bankCollection.updateOne({ userId }, { $inc: { bank: -amount } });
-        await usersData.set(event.senderID, { money: userMoney + amount });
-        return message.reply(`[🏦 Bank 🏦]\n\n✅ Successfully withdrew $${amount} from your bank account`);
-      }
-
+  // Reply with success
+  return message.reply(`[🏦 Bank 🏦]\n\n✅ Successfully transferred $${formatMoney(transferAmount)} to ${recipientName}.`);
+}
 	    
+
 if (command === "interest") {
   const interestRate = 0.01; // 1% daily interest rate
   const lastInterestClaimed = bankData.lastInterestClaimed || 0;
@@ -367,31 +380,41 @@ if (command === "payloan") {
   }
 }
 	
-      // Top command (Display top 10 richest users)
-      if (command === "top") {
-        const topUsers = await bankCollection.find({}).sort({ bank: -1 }).limit(10).toArray();
-        if (topUsers.length === 0) {
-          return message.reply("No data available for top users.");
-        }
+ if (command === "top") {
+  try {
+    const topUsers = await bankCollection.find({}).sort({ bank: -1 }).limit(15).toArray();
 
-        let topList = "[🏦 Bank 🏦]\n\nTop 10 Bank richest users:\n";
-        for (let i = 0; i < topUsers.length; i++) {
-          const userId = topUsers[i].userId;
+    if (!topUsers || topUsers.length === 0) {
+      return message.reply("No data available for top users.");
+    }
+
+    const topList = "[🏦 Bank 🏦]\n\nTop 15 Bank Richest Users:\n" +
+      (await Promise.all(
+        topUsers.map(async (user, index) => {
+          if (!user || !user.userId) return null;
+
+          const userId = user.userId;
           const userInfo = await api.getUserInfo(userId);
           const userName = userInfo[userId]?.name || "Unknown User";
-          const balanceDisplay = topUsers[i].bank ? formatMoney(topUsers[i].bank) : "0";
-          topList += `[${i + 1}] ${userName}: ${balanceDisplay}\n`;
-        }
-        topList += "\n";
-        return message.reply(topList);
-      }
+          const balanceDisplay = user.bank ? formatMoney(user.bank) : "0";
+          return `[${index + 1}] ${userName}: ${balanceDisplay}`;
+        })
+      )).filter(Boolean).join("\n");
 
-    } catch (error) {
-      console.error("Error during MongoDB operation:", error);
-      return message.reply("An error occurred while processing your request.");
-    } finally {
-      await client.close();
-    }
+    return message.reply(topList);
+
+  } catch (error) {
+    console.error("Error fetching top users:", error);
+    return message.reply("❌ An error occurred while fetching the top bank users.");
+  }
+}
+    return message.reply("[🏦 Bank 🏦]\n\n❌ Please use one of the following valid commands: Balance, Deposit, Withdraw, Interest, Transfer, Top, Loan, PayLoan.");
+  } catch (error) {
+    console.error("Error during MongoDB operation:", error);
+    return message.reply("[🏦 Bank 🏦]\n\n❌ An error occurred while processing your request. Please try again later.");
+  } finally {
+    await client.close();
+  }
   },
 };
 
@@ -412,4 +435,4 @@ function formatMoney(num) {
   } else {
     return Number(num.toFixed(1)) + units[unit]; // Shows 1 decimal place for smaller numbers too
   }
-	      }
+		    }
