@@ -7,8 +7,7 @@ module.exports = {
     name: "pair",
     author: "xemon",
     role: 0,
-    shortDescription: " ",
-    longDescription: "",
+    countDown: 10,
     category: "love",
     guide: "{pn}",
   },
@@ -107,11 +106,31 @@ module.exports = {
     fs.removeSync(pathAvt1);
     fs.removeSync(pathAvt2);
 
-    // Send the message with names properly replaced
+    // Function to convert names to bold Unicode (using a specific font style)
+    function toBoldUnicode(name) {
+      const boldAlphabet = {
+        "a": "𝐚", "b": "𝐛", "c": "𝐜", "d": "𝐝", "e": "𝐞", "f": "𝐟", "g": "𝐠", "h": "𝐡", "i": "𝐢", "j": "𝐣",
+        "k": "𝐤", "l": "𝐥", "m": "𝐦", "n": "𝐧", "o": "𝐨", "p": "𝐩", "q": "𝐪", "r": "𝐫", "s": "𝐬", "t": "𝐭",
+        "u": "𝐮", "v": "𝐯", "w": "𝐰", "x": "𝐱", "y": "𝐲", "z": "𝐳", "A": "𝐀", "B": "𝐁", "C": "𝐂", "D": "𝐃",
+        "E": "𝐄", "F": "𝐅", "G": "𝐆", "H": "𝐇", "I": "𝐈", "J": "𝐉", "K": "𝐊", "L": "𝐋", "M": "𝐌", "N": "𝐍",
+        "O": "𝐎", "P": "𝐏", "Q": "𝐐", "R": "𝐑", "S": "𝐒", "T": "𝐓", "U": "𝐔", "V": "𝐕", "W": "𝐖", "X": "𝐗",
+        "Y": "𝐘", "Z": "𝐙", "0": "0", "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7", "8": "8",
+        "9": "9", " ": " ", "'": "'", ",": ",", ".": ".", "-": "-", "!": "!", "?": "?"
+      };
+
+      return name.split('')
+        .map(char => boldAlphabet[char] || char) // Convert to bold if it's in the alphabet, otherwise return the char as is.
+        .join('');
+    }
+
+    // Convert user names to bold Unicode
+    const styledName1 = toBoldUnicode(name1);
+    const styledName2 = toBoldUnicode(name2);
+
     return api.sendMessage(
       {
-        body: `🥰Successful pairing!\n• ${name1}🎀\n• ${name2}🎀\n💌Wish you two hundred years of happiness💕\n\nLove percentage ${tile}%`, 
-       attachment: fs.createReadStream(pathImg),
+        body: `🥰𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥 𝐩𝐚𝐢𝐫𝐢𝐧𝐠\n• ${styledName1}🎀\n• ${styledName2}🎀\n💌𝐖𝐢𝐬𝐡 𝐲𝐨𝐮 𝐭𝐰𝐨 𝐡𝐮𝐧𝐝𝐫𝐞𝐝 𝐲𝐞𝐚𝐫𝐬 𝐨𝐟 𝐡𝐚𝐩𝐩𝐢𝐧𝐞𝐬𝐬💕\n\n𝐋𝐨𝐯𝐞 𝐩𝐞𝐫𝐜𝐞𝐧𝐭𝐚𝐠𝐞 ${tile}%💙`, 
+        attachment: fs.createReadStream(pathImg),
       },
       event.threadID,
       () => fs.unlinkSync(pathImg),
