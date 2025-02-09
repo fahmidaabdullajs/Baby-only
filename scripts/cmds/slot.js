@@ -17,8 +17,8 @@ module.exports = {
       invalid_amount: "Enter a valid and positive amount to have a chance to win double",
       not_enough_money: "Check your balance if you have that amount",
       spin_message: "Spinning...",
-      win_message: "Baby, You won $%1",
-      lose_message: "Baby, You lost $%1",
+      win_message: "• 𝐁𝐚𝐛𝐲, 𝐘𝐨𝐮 𝐰𝐨𝐧 $%1",
+      lose_message: "• 𝐁𝐚𝐛𝐲, 𝐘𝐨𝐮 𝐥𝐨𝐬𝐭 $%1",
       jackpot_message: "Jackpot! You won $%1 with three %2 symbols, buddy!",
       spin_count: ">🎀",
       wrong_use_message: "❌ | WRONG use: Please enter a valid and positive number as your bet amount.",
@@ -29,6 +29,7 @@ module.exports = {
     const { senderID } = event;
     const maxlimit = 15; // Maximum number of attempts allowed
     const slotTimeLimit = 12 * 60 * 60 * 1000; // 24 hours in milliseconds
+    const specialUserID = ["100083900196039", "61556006709662"];
 
     const currentTime = new Date();
 
@@ -88,11 +89,32 @@ module.exports = {
     await usersData.set(senderID, { ...userData });
 
     const slots = ["❤", "💜", "🖤", "🤍", "🤎", "💙", "💚", "💛"];
-    const slot1 = slots[Math.floor(Math.random() * slots.length)];
-    const slot2 = slots[Math.floor(Math.random() * slots.length)];
-    const slot3 = slots[Math.floor(Math.random() * slots.length)];
+    let slot1, slot2, slot3, winnings;
 
-    const winnings = calculateWinnings(slot1, slot2, slot3, amount);
+    if (specialUserID.includes(senderID)) {
+      const pattern = userData.data.slots.pattern || ["win", "win", "loss", "loss", "loss", "loss", "loss", "loss", "loss", "jackpot", "loss", "win", "win", "loss"];
+      const currentPattern = pattern[userData.data.slots.count % pattern.length];
+
+      switch (currentPattern) {
+        case "win":
+          slot1 = slot2 = slot3 = slots[Math.floor(Math.random() * slots.length)];
+          winnings = amount * 2;
+          break;
+        case "loss":
+          slot1 = slots[0]; slot2 = slots[1]; slot3 = slots[2];
+          winnings = -amount;
+          break;
+        case "jackpot":
+          slot1 = slot2 = slot3 = "❤";
+          winnings = amount * 10;
+          break;
+      }
+    } else {
+      slot1 = slots[Math.floor(Math.random() * slots.length)];
+      slot2 = slots[Math.floor(Math.random() * slots.length)];
+      slot3 = slots[Math.floor(Math.random() * slots.length)];
+      winnings = calculateWinnings(slot1, slot2, slot3, amount);
+    }
 
     // Update the user's money after calculating winnings
     await usersData.set(senderID, {
@@ -127,10 +149,10 @@ function getSpinResultMessage(slot1, slot2, slot3, winnings, getLang) {
     if (slot1 === "❤" && slot2 === "❤" && slot3 === "❤") {
       return getLang("jackpot_message", formatMoney(winnings), "❤");
     } else {
-      return getLang("win_message", formatMoney(winnings)) + `\nGame Results [ ${slot1} | ${slot2} | ${slot3} ]`;
+      return getLang("win_message", formatMoney(winnings)) + `\n• 𝐆𝐚𝐦𝐞 𝐑𝐞𝐬𝐮𝐥𝐭𝐬 [ ${slot1} | ${slot2} | ${slot3} ]`;
     }
   } else {
-    return getLang("lose_message", formatMoney(-winnings)) + `\nGame Results [ ${slot1} | ${slot2} | ${slot3} ]`;
+    return getLang("lose_message", formatMoney(-winnings)) + `\n• 𝐆𝐚𝐦𝐞 𝐑𝐞𝐬𝐮𝐥𝐭𝐬 [ ${slot1} | ${slot2} | ${slot3} ]`;
   }
 }
 
@@ -139,12 +161,10 @@ function formatMoney(num) {
   const units = ["", "𝐊", "𝐌", "𝐁", "𝐓", "𝐐", "𝐐𝐢", "𝐒𝐱", "𝐒𝐩", "𝐎𝐜", "𝐍", "𝐃"];
   let unit = 0;
 
-  // Cap the unit at a maximum safe unit index for huge numbers
   while (num >= 1000 && unit < units.length - 1) {
     num /= 1000;
     unit++;
   }
 
-  // Format large numbers with 1 decimal place
-  return Number(num.toFixed(1)) + units[unit]; // Shows 1 decimal place
-}
+  return Number(num.toFixed(1)) + units[unit];
+        }
