@@ -1,0 +1,222 @@
+[
+  {
+    "category": "bangla",
+    "question": "এনিমে 'নরুটো'র প্রধান চরিত্রের নাম কী?",
+    "options": {
+      "a": "নরুটো উজুমাকি",
+      "b": "সাসুকে উচিহা",
+      "c": "কাকাশি হাটাকে",
+      "d": "ইরুকা উমিনো"
+    },
+    "correctAnswer": "a"
+  },
+  {
+    "category": "bangla",
+    "question": "ড্রাগন বল Z এ কোন ড্রাগনটি রয়েছে?",
+    "options": {
+      "a": "শেনরন",
+      "b": "পোরুঙ্গা",
+      "c": "চারিজার্ড",
+      "d": "মিউটো"
+    },
+    "correctAnswer": "a"
+  },
+  {
+    "category": "bangla",
+    "question": "এনিমে 'ওয়ান পিস' এর প্রধান চরিত্রের নাম কী?",
+    "options": {
+      "a": "জোলো",
+      "b": "লুফি",
+      "c": "সানজি",
+      "d": "নামি"
+    },
+    "correctAnswer": "b"
+  },
+  {
+    "category": "bangla",
+    "question": "এনিমে 'এটাক অন টাইটান' এর প্রধান নারী চরিত্রের নাম কী?",
+    "options": {
+      "a": "মিকাসা আক্রামন",
+      "b": "এনি লিওনহার্ট",
+      "c": "এরউইন স্মিথ",
+      "d": "সাশা ব্লাউজ"
+    },
+    "correctAnswer": "a"
+  },
+  {
+    "category": "bangla",
+    "question": "ব্লিচের সবচেয়ে শক্তিশালী চরিত্র কোনটি?",
+    "options": {
+      "a": "ইচিগো কুরোসাকি",
+      "b": "আইজেন সোস্যুকে",
+      "c": "উরাহারা কিসুকে",
+      "d": "ইওয়াচ"
+    },
+    "correctAnswer": "b"
+  },
+  {
+    "category": "bangla",
+    "question": "ডেথ নোটের প্রধান চরিত্রের নাম কী?",
+    "options": {
+      "a": "এল ললাইট",
+      "b": "রিউক",
+      "c": "লাইট ইয়াগামি",
+      "d": "নিয়ার"
+    },
+    "correctAnswer": "c"
+  },
+  {
+    "category": "bangla",
+    "question": "কোন এনিমে তে 'এভাঞ্জেলিয়ন' নামক একটি বিশাল রোবট রয়েছে?",
+    "options": {
+      "a": "নিওন জেনেসিস এভাঞ্জেলিয়ন",
+      "b": "গুরেন লেগান",
+      "c": "কোড গিয়াস",
+      "d": "মোবাইল স্যুট গানডাম"
+    },
+    "correctAnswer": "a"
+  },
+  {
+    "category": "bangla",
+    "question": "এনিমে 'মাই হিরো একাডেমিয়া' তে প্রধান চরিত্রের ক্ষমতা কী?",
+    "options": {
+      "a": "সুপার শক্তি",
+      "b": "অদৃশ্য ক্ষমতা",
+      "c": "অল ফর ওয়ান",
+      "d": "ওয়ান ফর অল"
+    },
+    "correctAnswer": "d"
+  },
+  {
+    "category": "bangla",
+    "question": "এনিমে 'সোল ইটার' তে প্রধান চরিত্রটি কী দিয়ে যুদ্ধ করে?",
+    "options": {
+      "a": "পানির জাদু",
+      "b": "আগুনের জাদু",
+      "c": "বরফের জাদু",
+      "d": "প্রকাশের জাদু"
+    },
+    "correctAnswer": "a"
+  },
+  {
+    "category": "bangla",
+    "question": "এনিমে 'ফুলমেটাল আলকেমিস্ট' তে 'এডওয়ার্ড এলরিক' কোন চরিত্র?",
+    "options": {
+      "a": "ডাক্তার",
+      "b": "যোদ্ধা",
+      "c": "অলকেমিস্ট",
+      "d": "শিক্ষক"
+    },
+    "correctAnswer": "c"
+  },
+  {
+    "category": "english",
+    "question": "Who is the main protagonist of Naruto?",
+    "options": {
+      "a": "Naruto Uzumaki",
+      "b": "Sasuke Uchiha",
+      "c": "Kakashi Hatake",
+      "d": "Iruka Umino"
+    },
+    "correctAnswer": "a"
+  },
+  {
+    "category": "english",
+    "question": "What is the name of the dragon in Dragon Ball Z?",
+    "options": {
+      "a": "Shenron",
+      "b": "Porunga",
+      "c": "Charizard",
+      "d": "Mewtwo"
+    },
+    "correctAnswer": "a"
+  },
+  {
+    "category": "english",
+    "question": "What is the title of the main character in One Piece?",
+    "options": {
+      "a": "Zoro",
+      "b": "Luffy",
+      "c": "Sanji",
+      "d": "Nami"
+    },
+    "correctAnswer": "b"
+  },
+  {
+    "category": "english",
+    "question": "In Attack on Titan, what is the name of the main female protagonist?",
+    "options": {
+      "a": "Mikasa Ackerman",
+      "b": "Annie Leonhart",
+      "c": "Erwin Smith",
+      "d": "Sasha Blouse"
+    },
+    "correctAnswer": "a"
+  },
+  {
+    "category": "english",
+    "question": "Who is the strongest character in Bleach?",
+    "options": {
+      "a": "Ichigo Kurosaki",
+      "b": "Aizen Sousuke",
+      "c": "Urahara Kisuke",
+      "d": "Yhwach"
+    },
+    "correctAnswer": "b"
+  },
+  {
+    "category": "english",
+    "question": "What is the name of the main character in Death Note?",
+    "options": {
+      "a": "L Lawliet",
+      "b": "Ryuk",
+      "c": "Light Yagami",
+      "d": "Near"
+    },
+    "correctAnswer": "c"
+  },
+  {
+    "category": "english",
+    "question": "Which anime features a giant robot called 'Evangelion'?",
+    "options": {
+      "a": "Neon Genesis Evangelion",
+      "b": "Gurren Lagann",
+      "c": "Code Geass",
+      "d": "Mobile Suit Gundam"
+    },
+    "correctAnswer": "a"
+  },
+  {
+    "category": "english",
+    "question": "What is the main power of the protagonist in My Hero Academia?",
+    "options": {
+      "a": "Super strength",
+      "b": "Invisible power",
+      "c": "All For One",
+      "d": "One For All"
+    },
+    "correctAnswer": "d"
+  },
+  {
+    "category": "english",
+    "question": "In which anime does the main character wield a scythe?",
+    "options": {
+      "a": "Soul Eater",
+      "b": "Naruto",
+      "c": "Attack on Titan",
+      "d": "One Piece"
+    },
+    "correctAnswer": "a"
+  },
+  {
+    "category": "english",
+    "question": "Which anime features the character called 'Edward Elric'?",
+    "options": {
+      "a": "Naruto",
+      "b": "Fullmetal Alchemist",
+      "c": "One Piece",
+      "d": "Bleach"
+    },
+    "correctAnswer": "b"
+  }
+]
