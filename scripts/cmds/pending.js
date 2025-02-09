@@ -17,16 +17,10 @@ module.exports = {
   },
 
   onReply: async function ({ message, api, event, Reply, usersData }) {
-    const allowedThreadID = '7460623087375340'; // The thread ID where the command is allowed
     const { author, pending } = Reply;
     
     if (String(event.senderID) !== String(author)) return;
     const { body, threadID, messageID } = event;
-
-    // Check if the command is being used in the correct thread
-    if (threadID !== allowedThreadID) {
-      return api.sendMessage("❌ 𝐎𝐧𝐥𝐲 𝐛𝐨𝐭 𝐒𝐮𝐩𝐩𝐨𝐫𝐭 𝐠𝐫𝐨𝐮𝐩 𝐰𝐨𝐫𝐤 𝐭𝐡𝐢𝐬 𝐜𝐨𝐦𝐦𝐚𝐧𝐝.\n\n𝐓𝐲𝐩𝐞 !joingc 𝐚𝐝𝐝 𝐭𝐨 𝐛𝐨𝐭 𝐬𝐮𝐩𝐩𝐨𝐫𝐭 𝐠𝐫𝐨𝐮𝐩.", threadID, messageID);
-    }
 
     var count = 0;
 
@@ -45,7 +39,7 @@ module.exports = {
         api.unsendMessage(messageID);
 
         api.changeNickname(
-          `Your Baby`,
+          `𝙔𝙤𝙪𝙧 𝙗𝙖𝙗𝙮 め`,
           pending[singleIndex - 1].threadID,
           api.getCurrentUserID()
         );
@@ -82,15 +76,9 @@ module.exports = {
   },
 
   onStart: async function ({ message, api, event }) {
-    const allowedThreadID = '7460623087375340'; // The thread ID where the command is allowed
     const { threadID, messageID } = event;
     const commandName = this.config.name;
     var msg = "", index = 1;
-
-    // Check if the command is being used in the correct thread
-    if (threadID !== allowedThreadID) {
-      return api.sendMessage("❌ 𝐎𝐧𝐥𝐲 𝐛𝐨𝐭 𝐒𝐮𝐩𝐩𝐨𝐫𝐭 𝐠𝐫𝐨𝐮𝐩 𝐰𝐨𝐫𝐤 𝐭𝐡𝐢𝐬 𝐜𝐨𝐦𝐦𝐚𝐧𝐝.\n\n𝐓𝐲𝐩𝐞 !joingc 𝐚𝐝𝐝 𝐭𝐨 𝐛𝐨𝐭 𝐬𝐮𝐩𝐩𝐨𝐫𝐭 𝐠𝐫𝐨𝐮𝐩.", threadID, messageID);
-    }
 
     try {
       var spam = await api.getThreadList(100, null, ["OTHER"]) || [];
@@ -103,11 +91,11 @@ module.exports = {
 
     for (const single of list) {
       const threadName = single.name || "Unknown";
-      msg += `${index++}: ${threadName}\n𝐓𝐢𝐝:${single.threadID}\n\n`;
+      msg += `│${index++}. ${threadName}\n│𝐓𝐈𝐃:${single.threadID}\n`;
     }
 
     if (list.length !== 0) {
-      return api.sendMessage(`📚 | 𝐓𝐨𝐭𝐚𝐥 𝐩𝐞𝐧𝐝𝐢𝐧𝐠 𝐠𝐫𝐨𝐮𝐩: ${list.length} \n${msg}\n\n𝐑𝐞𝐩𝐥𝐲 𝐭𝐨 𝐭𝐡𝐞 𝐨𝐫𝐝𝐞𝐫 𝐧𝐮𝐦𝐛𝐞𝐫 𝐛𝐞𝐥𝐨𝐰 𝐭𝐨 𝐚𝐩𝐩𝐫𝐨𝐯𝐞`, threadID, (error, info) => {
+      return api.sendMessage(`╭─╮\n│𝐓𝐨𝐭𝐚𝐥 𝐩𝐞𝐧𝐝𝐢𝐧𝐠 𝐠𝐫𝐨𝐮𝐩: ${list.length} \n${msg}╰───────────ꔪ\n\n𝐑𝐞𝐩𝐥𝐲 𝐭𝐨 𝐭𝐡𝐞 𝐨𝐫𝐝𝐞𝐫 𝐧𝐮𝐦𝐛𝐞𝐫 𝐛𝐞𝐥𝐨𝐰 𝐭𝐨 𝐚𝐩𝐩𝐫𝐨𝐯𝐞`, threadID, (error, info) => {
         global.GoatBot.onReply.set(info.messageID, {
           commandName,
           messageID: info.messageID,
