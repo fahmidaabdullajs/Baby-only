@@ -11,9 +11,9 @@ async function connectToDB() {
 
 let animequizData = [];
 try {
-  animequizData = JSON.parse(fs.readFileSync("animequiz.json", "utf-8"));
+  animequizData = JSON.parse(fs.readFileSync("animequiz2.json", "utf-8"));
 } catch (error) {
-  console.error("Error reading or parsing animequiz.json:", error);
+  console.error("Error reading or parsing animequiz2.json:", error);
 }
 
 function getQuizFromJSON(category) {
