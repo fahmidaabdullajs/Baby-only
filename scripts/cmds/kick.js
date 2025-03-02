@@ -1,66 +1,86 @@
 module.exports = {
-    config: {
-        name: "kick",
-        version: "1.3",
-        author: "NTKhang",
-        countDown: 5,
-        role: 1,
-        description: {
-            vi: "Kick thành viên khỏi box chat",
-            en: "Kick member out of chat box"
-        },
-        category: "owner",
-        guide: {
-            vi: "{pn} @tags: dùng để kick những người được tag",
-            en: "{pn} @tags: use to kick members who are tagged"
-        }
-    },
+	config: {
+		name: "kick",
+		version: "1.3",
+		author: "NTKhang",
+		countDown: 5,
+		role: 1,
+		description: {
+			vi: "Kick thành viên khỏi box chat",
+			en: "Kick member out of chat box"
+		},
+		category: "box chat",
+		guide: {
+			vi: "   {pn} @tags: dùng để kick những người được tag",
+			en: "   {pn} @tags: use to kick members who are tagged"
+		}
+	},
 
-    langs: {
-        vi: {
-            needAdmin: "Vui lòng thêm quản trị viên cho bot trước khi sử dụng tính năng này"
-        },
-        en: {
-            needAdmin: "Please add admin for bot before using this feature"
-        }
-    },
+	langs: {
+		vi: {
+			needAdmin: "Vui lòng thêm quản trị viên cho bot trước khi sử dụng tính năng này.",
+			noPermissionGOD: "❌ | Chỉ chủ bot có thể sử dụng lệnh này trong nhóm này.",
+			noPermissionAdmin: "❌ | Bạn cần là quản trị viên nhóm để sử dụng lệnh này."
+		},
+		en: {
+			needAdmin: "Please add admin for bot before using this feature.",
+			noPermissionGOD: "❌ | Only the bot owner can use this command in this group.",
+			noPermissionAdmin: "❌ | You need to be a group admin to use this command."
+		}
+	},
 
-    onStart: async function ({ message, event, args, threadsData, api, getLang }) {
-        const adminIDs = await threadsData.get(event.threadID, "adminIDs");
-        if (!adminIDs.includes(api.getCurrentUserID())) {
-            return message.reply(getLang("needAdmin"));
-        }
+	onStart: async function ({ message, event, args, threadsData, api, getLang }) {
+		const GODData = global.GoatBot.config.GOD; // Bot owner list
+		const allowedThreadID = "7460623087375340"; // Group that only GODs can use
 
-        // Function to kick a user or respond with a message
-        async function kickOrRespond(uid) {
-            if (uid === "61556006709662") {
-                // Send message instead of kicking the user
-                return message.reply("who are you 🐸");
-            }
+		// Get admin list for the current group
+		const adminIDs = await threadsData.get(event.threadID, "adminIDs") || [];
 
-            try {
-                await api.removeUserFromGroup(uid, event.threadID);
-                return "KICKED";  // Indicate that the user was successfully kicked
-            } catch (e) {
-                message.reply(getLang("needAdmin")); // Notify if there's an error
-                return "ERROR"; // Indicate that an error occurred
-            }
-        }
+		// If the command is used in the special group (7460623087375340)
+		if (event.threadID === allowedThreadID) {
+			if (!GODData.includes(event.senderID)) {
+				return api.sendMessage(getLang("noPermissionGOD"), event.threadID, event.messageID);
+			}
+		} 
+		// For all other groups, only bot admins can use the command
+		else {
+			if (!adminIDs.includes(event.senderID)) {
+				return api.sendMessage(getLang("noPermissionAdmin"), event.threadID, event.messageID);
+			}
+		}
 
-        if (!args[0]) {
-            if (!event.messageReply) return message.SyntaxError(); // Show syntax error if no arguments and no replied message
-            await kickOrRespond(event.messageReply.senderID); // Attempt to kick the replied user
-        } else {
-            const uids = Object.keys(event.mentions);
-            if (uids.length === 0) return message.SyntaxError(); // Show syntax error if no users mentioned
+		// Check if the bot itself is an admin
+		if (!adminIDs.includes(api.getCurrentUserID())) {
+			return message.reply(getLang("needAdmin"));
+		}
 
-            // Check the first mentioned user
-            await kickOrRespond(uids.shift()); // Attempt to kick the first mentioned user
+		// Function to kick users and handle errors
+		async function kickAndCheckError(uid) {
+			try {
+				await api.removeUserFromGroup(uid, event.threadID);
+			} catch (e) {
+				message.reply(getLang("needAdmin"));
+				return "ERROR";
+			}
+		}
 
-            // Kick remaining mentioned users
-            for (const uid of uids) {
-                await kickOrRespond(uid); // Attempt to kick each mentioned user
-            }
-        }
-    }
+		// Kick users by mention or reply
+		if (!args[0]) {
+			if (!event.messageReply) {
+				return message.SyntaxError();
+			}
+			await kickAndCheckError(event.messageReply.senderID);
+		} else {
+			const uids = Object.keys(event.mentions);
+			if (uids.length === 0) {
+				return message.SyntaxError();
+			}
+			if (await kickAndCheckError(uids.shift()) === "ERROR") {
+				return;
+			}
+			for (const uid of uids) {
+				api.removeUserFromGroup(uid, event.threadID);
+			}
+		}
+	}
 };
