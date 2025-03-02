@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const uri = "mongodb+srv://rockx27:rockonx27fire@cluster0.e5kr5.mongodb.net/GoatBotV2?retryWrites=true&w=majority&appName=Cluster0"; // Replace with your MongoDB connection string
+const uri = "mongodb+srv://rockx27:rockonx27fire@cluster0.e5kr5.mongodb.net/GoatBotV2?retryWrites=true&w=majority&appName=Cluster0"; 
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const emojis = [
@@ -30,16 +30,23 @@ function toBoldUnicode(text) {
 }
 
 const stringSimilarity = require("string-similarity");
+
 async function getBotResponse(input) {
   try {
     const allData = await Teach.find();
-    const triggers = allData.map(item => item.trigger);
+    const triggers = allData.map(item => item.trigger.toLowerCase());
 
-    const matches = stringSimilarity.findBestMatch(input.toLowerCase(), triggers);
-    const bestMatch = matches.bestMatch;
+    const normalizedInput = input.toLowerCase();
+    const matchingTriggers = triggers.filter(trigger =>
+      trigger.includes(normalizedInput) || normalizedInput.includes(trigger)
+    );
 
-    if (bestMatch.rating > 0.6) {
-      const matchedData = allData.find(item => item.trigger === bestMatch.target);
+    const matches = stringSimilarity.findBestMatch(normalizedInput, triggers);
+    const bestMatch = matches.bestMatch.rating > 0.6 ? matches.bestMatch.target : null;
+    const finalMatch = bestMatch || matchingTriggers[0];
+
+    if (finalMatch) {
+      const matchedData = allData.find(item => item.trigger.toLowerCase() === finalMatch);
       if (matchedData && matchedData.responses.length > 0) {
         const randomIndex = Math.floor(Math.random() * matchedData.responses.length);
         const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
@@ -51,8 +58,8 @@ async function getBotResponse(input) {
 
     return "𝐨𝐢 𝐦𝐚𝐦𝐚 𝐞𝐢𝐭𝐚 𝐚𝐦𝐤 𝐭𝐞𝐚𝐜𝐡 𝐤𝐨𝐫𝐚 𝐡𝐲 𝐧𝐚𝐢 <🥺";
   } catch (error) {
-    console.error("Error fetching data from MongoDB:", error.message);
-    return "Error fetching data.";
+    console.error("MongoDB থেকে ডাটা নিয়ে আসার সময় ত্রুটি:", error.message);
+    return "ত্রুটি ঘটেছে।";
   }
 }
 
