@@ -29,7 +29,7 @@ module.exports = {
   onStart: async function ({ args, message, event, envCommands, usersData, commandName, getLang, api }) {
     const { senderID } = event;
     const maxlimit = 15;
-    const slotTimeLimit = 12 * 60 * 60 * 1000;
+    const slotTimeLimit = 10 * 60 * 60 * 1000;
     
     const currentTime = new Date();
     const userData = await usersData.get(senderID);
@@ -126,4 +126,4 @@ function formatMoney(num) {
   }
 
   return Number(num.toFixed(1)) + units[unit];
-}
+                                             }
