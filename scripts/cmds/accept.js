@@ -1,118 +1,128 @@
-const moment = require("moment-timezone");
-
-module.exports = {
-  config: {
-    name: "accept",
-    aliases: ["acp"],
-    version: "1.7",
-    author: "MahMUD",
-    countDown: 5,
-    role: 0,
-    category: "admin",
-  },
-
-  onReply: async function ({ message, Reply, event, api, commandName }) {
-    const { author, listRequest } = Reply;
-    if (author !== event.senderID) return;
-
-    const args = event.body.trim().toLowerCase().split(" ");
-    let action;
-    let doc_id;
-
-    if (args[0] === "add") {
-      action = "accepted";
-      doc_id = "3147613905362928"; // Confirm friend request
-    } else if (args[0] === "del") {
-      action = "deleted";
-      doc_id = "4108254489275063"; // Delete friend request
-    } else {
-      return api.sendMessage("❌ Invalid command! Use:\n• `add <number|all>` to accept\n• `del <number|all>` to delete", event.threadID, event.messageID);
-    }
-
-    let targetIDs = args.slice(1);
-    if (args[1] === "all") {
-      targetIDs = listRequest.map((_, index) => index + 1);
-    }
-
-    const success = [];
-    const failed = [];
-
-    for (const stt of targetIDs) {
-      const user = listRequest[parseInt(stt) - 1];
-      if (!user) {
-        failed.push(`❌ Can't find request #${stt}`);
-        continue;
-      }
-
-      // Create a new form object for each request to avoid overwriting
-      const form = {
-        av: api.getCurrentUserID(),
-        fb_api_caller_class: "RelayModern",
-        fb_api_req_friendly_name: action === "accepted" 
-          ? "FriendingCometFriendRequestConfirmMutation" 
-          : "FriendingCometFriendRequestDeleteMutation",
-        doc_id,
-        variables: JSON.stringify({
-          input: {
-            source: "friends_tab",
-            actor_id: api.getCurrentUserID(),
-            friend_requester_id: user.node.id, // Set friend ID
-            client_mutation_id: Math.round(Math.random() * 19).toString()
-          },
-          scale: 3,
-          refresh_num: 0
-        })
-      };
-
-      try {
-        const response = await api.httpPost("https://www.facebook.com/api/graphql/", form);
-        if (JSON.parse(response).errors) {
-          failed.push(`❌ ${user.node.name}`);
-        } else {
-          success.push(`>🎀 ${user.node.name}`);
-        }
-      } catch (e) {
-        failed.push(`❌ ${user.node.name}`);
-      }
-    }
-
-    let resultMsg = `✅ ${action.charAt(0).toUpperCase() + action.slice(1)} ${success.length} requests:\n${success.join("\n")}`;
-    if (failed.length > 0) {
-      resultMsg += `\n❌ Failed to process ${failed.length} requests:\n${failed.join("\n")}`;
-    }
-    api.sendMessage(resultMsg, event.threadID, event.messageID);
-  },
-
-  onStart: async function ({ event, api, commandName }) {
-    const form = {
-      av: api.getCurrentUserID(),
-      fb_api_req_friendly_name: "FriendingCometFriendRequestsRootQueryRelayPreloader",
-      fb_api_caller_class: "RelayModern",
-      doc_id: "4499164963466303",
-      variables: JSON.stringify({ input: { scale: 3 } })
-    };
-
-    try {
-      const response = await api.httpPost("https://www.facebook.com/api/graphql/", form);
-      const listRequest = JSON.parse(response).data.viewer.friending_possibilities.edges;
-      if (!listRequest.length) return api.sendMessage("📌 No pending friend requests.", event.threadID, event.messageID);
-
-      let msg = `╭─╮\n│ 𝐓𝐨𝐭𝐚𝐥 𝐑𝐞𝐪𝐮𝐞𝐬𝐭𝐬: ${listRequest.length}`;
-      listRequest.forEach((user, index) => {
-        msg += `\n│ ${index + 1}. ${user.node.name}\n│ 𝐔𝐈𝐃: ${user.node.id}`;
-      });
-      msg += "\n╰───────────ꔪ\n\n𝐑𝐞𝐩𝐥𝐲 𝐰𝐢𝐭𝐡 add <number|all> to accept or del <number|all> to delete.";
-
-      api.sendMessage(msg, event.threadID, (e, info) => {
-        global.GoatBot.onReply.set(info.messageID, {
-          commandName,
-          messageID: info.messageID,
-          listRequest,
-          author: event.senderID,
-        });
-      }, event.messageID);
-    } catch (e) {
-      api.sendMessage("❌ Failed to fetch friend requests.", event.threadID, event.messageID);
-    }
-  },
-};
+[
+	{
+		"key": "dbln",
+		"value": "%7B%2261572800220563%22%3A%22dqaodg5O%22%2C%2261573116536344%22%3A%2278KM4KeD%22%2C%2261567172986880%22%3A%22b5U0ElQs%22%7D",
+		"domain": "facebook.com",
+		"path": "/login/device-based/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.880Z",
+		"lastAccessed": "2025-03-02T23:02:19.881Z"
+	},
+	{
+		"key": "datr",
+		"value": "ZPiTZ6BvrtVP4SdXlnS-IEHO",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.881Z",
+		"lastAccessed": "2025-03-02T23:02:19.881Z"
+	},
+	{
+		"key": "sb",
+		"value": "ZPiTZ6ki4hQ3KrAWLRqHZmVw",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.881Z",
+		"lastAccessed": "2025-03-02T23:02:19.881Z"
+	},
+	{
+		"key": "vpd",
+		"value": "v1%3B716x360x2",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.881Z",
+		"lastAccessed": "2025-03-02T23:02:19.881Z"
+	},
+	{
+		"key": "ps_l",
+		"value": "1",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.881Z",
+		"lastAccessed": "2025-03-02T23:02:19.881Z"
+	},
+	{
+		"key": "ps_n",
+		"value": "1",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.881Z",
+		"lastAccessed": "2025-03-02T23:02:19.881Z"
+	},
+	{
+		"key": "locale",
+		"value": "en_GB",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.881Z",
+		"lastAccessed": "2025-03-02T23:02:19.881Z"
+	},
+	{
+		"key": "m_pixel_ratio",
+		"value": "2",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.881Z",
+		"lastAccessed": "2025-03-02T23:02:19.881Z"
+	},
+	{
+		"key": "c_user",
+		"value": "100093552921166",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.881Z",
+		"lastAccessed": "2025-03-02T23:02:19.881Z"
+	},
+	{
+		"key": "fr",
+		"value": "1MiLhPFiFJQg4SFtL.AWXIwVgbSFYxy6pqJIyOrsFh7ffcYv-jVLdWyw.BnmjKU..AAA.0.0.BnxONf.AWXaoWWUNUM",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.882Z",
+		"lastAccessed": "2025-03-02T23:02:19.882Z"
+	},
+	{
+		"key": "xs",
+		"value": "15%3AOexToBpa-SOmqg%3A2%3A1740956512%3A-1%3A11552",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.882Z",
+		"lastAccessed": "2025-03-02T23:02:19.882Z"
+	},
+	{
+		"key": "wd",
+		"value": "360x800",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.882Z",
+		"lastAccessed": "2025-03-02T23:02:19.882Z"
+	},
+	{
+		"key": "wl_cbv",
+		"value": "v2%3Bclient_version%3A2756%3Btimestamp%3A1740956517",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.882Z",
+		"lastAccessed": "2025-03-02T23:02:19.882Z"
+	},
+	{
+		"key": "fbl_st",
+		"value": "101627312%3BT%3A29015942",
+		"domain": "facebook.com",
+		"path": "/",
+		"hostOnly": false,
+		"creation": "2025-03-02T23:02:19.882Z",
+		"lastAccessed": "2025-03-02T23:02:19.882Z"
+	}
+]
