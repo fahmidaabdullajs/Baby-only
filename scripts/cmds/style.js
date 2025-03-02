@@ -1,25 +1,17 @@
-const axios = require('axios');
-
-const baseApiUrl = async () => {
-  const base = await axios.get(
-    `https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json`
-  );
-  return base.data.api;
-};
+const fs = require("fs");
 
 module.exports.config = {
-  name: "font",
-  aliases: ["style"],
-  version: '1.7',
+  name: "style",
+  aliases: ["font"],
+  version: "1.7",
   role: 0,
   countDowns: 5,
-  author: 'dipto',
-  description: 'This command transforms text with different fonts',
-  guide: { en: '[number] [text]' }
+  author: "MahMUD",
+  guide: { en: "[number] [text]" }
 };
 
 module.exports.onStart = async function ({ message, args }) {
-  if (args[0] === 'list') {
+  if (args[0] === "list") {
     const fontList = `Available Styles:\n
 1: Ă̈r̆̈ĭ̈y̆̈ă̈n̆̈
 2: 𝘈𝘳𝘪𝘺𝘢𝘯
@@ -47,18 +39,20 @@ module.exports.onStart = async function ({ message, args }) {
   }
 
   const number = args[0];
-  const text = encodeURIComponent(args.slice(1).join(" "));
+  const text = args.slice(1).join(" ");
 
   if (!text || isNaN(number)) {
-    return message.reply('Invalid command. Usage: font <number> <text>');
+    return message.reply("Invalid command. Usage: style <number> <text>");
   }
 
-  try {
-    const response = await axios.get(`${await baseApiUrl()}/font?message=${text}&number=${number}`);
-    const result = response.data;
-    await message.reply(result.data);
-  } catch (error) {
-    console.error('Error:', error);
-    message.reply('An error occurred while processing your request.');
+  const fontData = JSON.parse(fs.readFileSync("style.json", "utf-8"));
+
+  if (!fontData[number]) {
+    return message.reply("Invalid style number. Use 'style list' to see available styles.");
   }
+
+  const selectedFont = fontData[number];
+  const convertedText = text.split("").map(char => selectedFont[char] || char).join("");
+
+  await message.reply(convertedText);
 };
