@@ -1,0 +1,24 @@
+name: Auto Push JSON
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # প্রতি ১ ঘণ্টায় রান হবে
+  push:
+    branches:
+      - main  # যখনই `main` ব্রাঞ্চে পুশ হবে তখন রান হবে
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: node update.js
+      - run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Auto-update JSON files"
+          git push || echo "No changes to commit"
