@@ -73,7 +73,7 @@ module.exports = {
 
     const { senderID } = event;
     const maxlimit = 15;
-    const attemptTimeLimit = 12 * 60 * 60 * 1000;
+    const attemptTimeLimit = 10 * 60 * 60 * 1000;
     const currentTime = Date.now();
     const userData = await usersData.get(senderID);
 
