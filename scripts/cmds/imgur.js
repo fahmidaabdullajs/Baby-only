@@ -1,43 +1,45 @@
 const axios = require("axios");
-const baseApiUrl = async () => {
-  const base = await axios.get(
-    `https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json`,
-  );
-  return base.data.api;
-};
-
-(module.exports.config = {
-  name: "imgur",
-  version: "6.9",
-  author: "BADBOY",
-  countDown: 5,
-  role: 0,
-  category: "media",
-  description: "convert image/video into Imgur link",
-  category: "tools",
-  usages: "reply [image, video]",
-}),
-  (module.exports.onStart = async function ({ api, event }) {
-    const dip = event.messageReply?.attachments[0]?.url;
-    if (!dip) {
-      return api.sendMessage(
-        "Please reply to an image or video.",
-        event.threadID,
-        event.messageID,
-      );
-    }
+module.exports = {
+  config: {
+    name: "imgur",
+    author: "Nyx",
+    category:'media'
+  },
+  onStart: async function ({ api, event }) {
     try {
-      const res = await axios.get(
-        `${await baseApiUrl()}/imgur?url=${encodeURIComponent(dip)}`,
+      if (!event.messageReply || !event.messageReply.attachments ) {
+       api.sendMessage(
+          "❌ Please reply to an image or video message to upload it to Imgur.",
+          event.threadID,
+          event.messageID
+        );
+      }
+
+      const attachment = event.messageReply.attachments[0].url;
+      const response = await axios.post(
+        "https://api.imgur.com/3/upload",
+        { image: attachment },
+        {
+          headers: {
+            Authorization: "Bearer edd3135472e670b475101491d1b0e489d319940f",
+            "Content-Type": "application/json",
+          },
+        }
       );
-      const dipto = res.data.data;
-      api.sendMessage(dipto, event.threadID, event.messageID);
-    } catch (error) {
-      console.error(error);
-      return api.sendMessage(
-        "Failed to convert image or video into link.",
+
+      const imgurData = response.data;
+      const imgurLink = imgurData.data.link;
+      api.sendMessage(
+        `${imgurLink}`,
         event.threadID,
-        event.messageID,
+        event.messageID
+      );
+    } catch (error) {
+      api.sendMessage(
+        `${error.message}`,
+        event.threadID,
+        event.messageID
       );
     }
-  });
+  },
+};
