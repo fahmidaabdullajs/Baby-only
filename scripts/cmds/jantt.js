@@ -40,6 +40,7 @@ module.exports.onStart = async ({ api, event, args }) => {
   }
 
   const badWords = ["fuck", "bitch", "maderchod", "asshole", "slut", "dick", "pussy", "whore", "magi", "voda", "vhuda", "vuda", "dhon", "heda", "khanki", "bessa", "noti", "kuttarbaccha", "gay", "hijla", "hijra", "ফাক", "বিচ", "মাদারচোদ", "অ্যাসহোল", "স্লাট", "ডিক", "পুসি", "হোয়ার", "মাগি", "ভোদা", "ভুদা", "ভুদা", "ধন", "হেদা", "খাকি", "বেশ্যা", "নটি", "কুকুরের বাচ্চা", "গে", "হিজড়া", "হিজলা"];
+  
   if (args[0] === "teach") {
     const [trigger, responses] = userMessage.replace("teach ", "").split(" - ");
     if (!trigger || !responses) return api.sendMessage("❌ | Invalid format!", event.threadID, event.messageID);
@@ -52,7 +53,12 @@ module.exports.onStart = async ({ api, event, args }) => {
 
     const existing = await Teach.findOne({ trigger });
     if (existing) {
-        existing.responses.push(...responseArray);
+        // Check if the responses already exist for this trigger
+        const newResponses = responseArray.filter(response => !existing.responses.includes(response));
+        if (newResponses.length === 0) {
+            return api.sendMessage("✅ Replies added:\n❌ | This reply has already been taught for this question. Please add a new reply.", event.threadID, event.messageID);
+        }
+        existing.responses.push(...newResponses);
         await existing.save();
     } else {
         await Teach.create({ trigger, responses: responseArray });
@@ -66,7 +72,7 @@ module.exports.onStart = async ({ api, event, args }) => {
         await UserTeachCount.create({ userID: uid, count: 1 });
     }
 
-    return api.sendMessage(`✅ Replies added for "${trigger}"`, event.threadID, event.messageID);
+    return api.sendMessage(`✅ Replies added: Replies "${responses}" added to "${trigger}".`, event.threadID, event.messageID);
   }
 
   if (args[0] === "remove") {
@@ -80,7 +86,7 @@ module.exports.onStart = async ({ api, event, args }) => {
 
   if (args[0] === "list" && args.length === 1) {
     const totalTeach = await Teach.countDocuments();
-    return api.sendMessage(`♻️ 𝐓𝐨𝐭𝐚𝐥 𝐓𝐞𝐚𝐜𝐡: ${totalTeach}`, event.threadID, event.messageID);
+    return api.sendMessage(`🎀 𝐓𝐨𝐭𝐚𝐥 𝐓𝐞𝐚𝐜𝐡: ${totalTeach}`, event.threadID, event.messageID);
   }
 
   if (args[0] === "list" && args[1] === "all") {
@@ -89,6 +95,9 @@ module.exports.onStart = async ({ api, event, args }) => {
     if (!userTeachCounts.length) {
       return api.sendMessage("❌ No user teach data found.", event.threadID, event.messageID);
     }
+
+    // Sort the userTeachCounts by count in descending order
+    userTeachCounts.sort((a, b) => b.count - a.count);
 
     const userNamesWithTeachCounts = await Promise.all(
       userTeachCounts.map(async (item) => {
@@ -102,8 +111,6 @@ module.exports.onStart = async ({ api, event, args }) => {
         }
       })
     );
-
-    userTeachCounts.sort((a, b) => b.count - a.count);
 
     const output = userNamesWithTeachCounts
       .map((item, index) => `${index + 1}. ${item}`)
