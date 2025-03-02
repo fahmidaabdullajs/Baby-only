@@ -1,45 +1,39 @@
 const axios = require("axios");
 const mongoose = require('mongoose');
 
-// MongoDB URI for your database
 const dbUri = "mongodb+srv://mahmudabdullax7:ttnRAhj81JikbEw8@cluster0.zwknjau.mongodb.net/GoatBotV2?retryWrites=true&w=majority&appName=Cluster0";
 
-// MongoDB Schema to track user usage
 const userSchema = new mongoose.Schema({
   userID: { type: String, required: true, unique: true },
   usageCount: { type: Number, default: 0 },
-  correctAnswersCount: { type: Number, default: 0 },  // Track correct answers
+  correctAnswersCount: { type: Number, default: 0 },
 });
 
-// MongoDB Schema for Quiz Game Stats (tracking wins)
 const quizStatsSchema = new mongoose.Schema({
   userID: { type: String, required: true, unique: true },
   correctAnswers: { type: Number, default: 0 },
   incorrectAnswers: { type: Number, default: 0 },
 });
 
-// MongoDB Schema for Flag Game Stats
 const flagStatsSchema = new mongoose.Schema({
   userID: { type: String, required: true, unique: true },
   winCount: { type: Number, default: 0 },
 });
 
+const waifuWinSchema = new mongoose.Schema({
+  userID: String,
+  winCount: { type: Number, default: 0 }
+});
+
 const UserUsage = mongoose.models.UserUsage || mongoose.model('UserUsage', userSchema);
 const QuizGameStats = mongoose.models.QuizGameStats || mongoose.model('QuizGameStats', quizStatsSchema);
 const FlagGameStats = mongoose.models.FlagGameStats || mongoose.model('FlagGameStats', flagStatsSchema);
+const WaifuWin = mongoose.models.WaifuWin || mongoose.model("WaifuWin", waifuWinSchema);
 
-// MongoDB Connection
 mongoose.connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Function to get the base API URL
-const baseApiUrl = async () => {
-  const base = await axios.get(`https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json`);
-  return base.data.api;
-};
-
-// Function to format large numbers (e.g., balance)
 function formatMoney(num) {
   const units = ["", "𝐊", "𝐌", "𝐁", "𝐓", "𝐐", "𝐐𝐢", "𝐒𝐱", "𝐒𝐩", "𝐎𝐜", "𝐍", "𝐃"];
   let unit = 0;
@@ -84,21 +78,17 @@ module.exports = {
     
     const allUsers = await usersData.getAll();
     
-    // Calculate Rich Rank
     const sortedRichUsers = allUsers.sort((a, b) => b.money - a.money);
     const richRank = sortedRichUsers.findIndex(user => String(user.userID) === String(uid)) + 1;
 
-    // Calculate Overall Rank
-    const sortedUsers = allUsers.sort((a, b) => b.exp - a.exp); // Sort by experience for top rank
+    const sortedUsers = allUsers.sort((a, b) => b.exp - a.exp);
     const overallRank = sortedUsers.findIndex(user => String(user.userID) === String(uid)) + 1;
 
     const userMoney = allUsers.find(user => String(user.userID) === String(uid)).money || 0;
 
-    // Get user's experience and level
     const userExp = allUsers.find(user => String(user.userID) === String(uid)).exp || 0;
     const userLevel = expToLevel(userExp);
 
-    // Set the genderText based on gender information
     let genderText;
     switch (userInfo[uid].gender) {
       case 1:
@@ -111,56 +101,39 @@ module.exports = {
         genderText = "Other";
     }
 
-    // Ensure position is defined (e.g., user class/type)
-    let position = userInfo[uid]?.type; // Use optional chaining to avoid errors if userInfo[uid] is undefined
-    position = position || "Normal User"; // Default value if no position is defined
+    let position = userInfo[uid]?.type;
+    position = position || "Normal User";
 
-    // Fetch Flag Stats from MongoDB
     const flagGameStats = await FlagGameStats.findOne({ userID: uid });
     const flagWins = flagGameStats ? flagGameStats.winCount : 0;
 
-    // Get all Flag Game stats for rank calculation
+    const waifuWinStats = await WaifuWin.findOne({ userID: uid });
+    const waifuWins = waifuWinStats ? waifuWinStats.winCount : 0;
+
     const allFlagGameStats = await FlagGameStats.find({}).sort({ winCount: -1 });
     const flagGameRank = allFlagGameStats.findIndex(stats => String(stats.userID) === String(uid)) + 1 || 0;
 
-    // Add axios call to fetch baby teacher data
-    const response = await axios.get(`${await baseApiUrl()}/baby?list=all`);
-    const dataa = response.data || { teacher: { teacherList: [] } };
-    let babyTeach = 0;
-    let babyTeacherRank = 0;
+    const allWaifuStats = await WaifuWin.find({}).sort({ winCount: -1 });
+    const waifuGameRank = allWaifuStats.findIndex(stats => String(stats.userID) === String(uid)) + 1 || 0;
 
-    if (dataa?.teacher?.teacherList?.length) {
-      // Find the specific babyTeach value
-      const teacherData = dataa.teacher.teacherList.find(t => t[uid]);
-      if (teacherData) {
-        babyTeach = teacherData[uid] || 0;
-      }
-
-      // Sort teacher list by the babyTeach value (descending order)
-      const sortedBabyTeachers = dataa.teacher.teacherList
-        .map(t => ({ userID: Object.keys(t)[0], babyTeach: t[Object.keys(t)[0]] })) // Extract userID and babyTeach
-        .sort((a, b) => b.babyTeach - a.babyTeach);  // Sort in descending order by babyTeach value
-
-      // Find the rank by the index of the sorted list
-      babyTeacherRank = sortedBabyTeachers.findIndex(t => t.userID === uid) + 1 || 0;
-    }
-
-    // Fetch Quiz Stats from MongoDB
     const quizStats = await QuizGameStats.findOne({ userID: uid });
     const correctAnswers = quizStats ? quizStats.correctAnswers : 0;
 
-    // Get all Quiz Game stats for rank calculation
     const allQuizStats = await QuizGameStats.find({}).sort({ correctAnswers: -1 });
     const quizRank = allQuizStats.findIndex(stats => String(stats.userID) === String(uid)) + 1 || 0;
 
-    // Format the balance
+    const animeQuizStats = await mongoose.connection.db.collection('animeQuizStats')
+        .find({ correctAnswers: { $gte: 0 } })
+        .sort({ correctAnswers: -1 })
+        .toArray();
+    const animeQuizRank = animeQuizStats.findIndex(stats => String(stats.userID) === String(uid)) + 1 || 0;
+    const animeQuizWins = animeQuizStats.find(stats => String(stats.userID) === String(uid))?.correctAnswers || 0;
+
     const formattedBalance = formatMoney(userMoney);
 
-    // Define displayOverallRank and displayRichRank
     const displayRichRank = richRank > 0 ? richRank : 0;
-    const displayOverallRank = overallRank > 0 ? overallRank : 0; // Show 0 if rank not found
+    const displayOverallRank = overallRank > 0 ? overallRank : 0;
 
-    // Compose the user information response
     const userInformation = `
 ╭──── [${userInfo[uid].name}]
 ├‣ 𝐍𝐢𝐜𝐤𝐍𝐚𝐦𝐞: ${userInfo[uid].alternateName || "none"}
@@ -183,13 +156,17 @@ module.exports = {
 ├‣ 𝐅𝐥𝐚𝐠 𝐖𝐢𝐧𝐬: ${flagWins}
 ╰‣ 𝐅𝐥𝐚𝐠 𝐆𝐚𝐦𝐞 𝐓𝐨𝐩: ${flagGameRank || 0}
 
+╭──── [ 𝐖𝐚𝐢𝐟𝐮 𝐆𝐚𝐦𝐞 ]
+├‣ 𝐖𝐚𝐢𝐟𝐮 𝐖𝐢𝐧𝐬: ${waifuWins}
+╰‣ 𝐖𝐚𝐢𝐟𝐮 𝐆𝐚𝐦𝐞 𝐓𝐨𝐩: ${waifuGameRank || 0}
+
 ╭──── [ 𝐐𝐮𝐢𝐳 𝐆𝐚𝐦𝐞 ]
 ├‣ 𝐐𝐮𝐢𝐳 𝐖𝐢𝐧𝐬: ${correctAnswers}
 ╰‣ 𝐐𝐮𝐢𝐳 𝐆𝐚𝐦𝐞 𝐓𝐨𝐩: ${quizRank || 0}
 
-╭──── [ 𝐁𝐚𝐛𝐲 𝐓𝐞𝐚𝐜𝐡𝐞𝐫 ]
-├‣ 𝐁𝐚𝐛𝐲 𝐓𝐞𝐚𝐜𝐡: ${babyTeach || 0}
-╰‣ 𝐁𝐚𝐛𝐲 𝐓𝐞𝐚𝐜𝐡𝐞𝐫 𝐓𝐨𝐩: ${babyTeacherRank || 0}`;
+╭──── [ 𝐀𝐧𝐢𝐦𝐞 𝐐𝐮𝐢𝐳 ]
+├‣ 𝐀𝐧𝐢𝐦𝐞 𝐐𝐮𝐢𝐳 𝐖𝐢𝐧𝐬: ${animeQuizWins}
+╰‣ 𝐀𝐧𝐢𝐦𝐞 𝐐𝐮𝐢𝐳 𝐆𝐚𝐦𝐞 𝐓𝐨𝐩: ${animeQuizRank || 0}`;
 
     message.reply({
       body: userInformation,
@@ -198,7 +175,6 @@ module.exports = {
   }
 };
 
-// Helper function to convert experience to level
 function expToLevel(exp, deltaNextLevel = 5) {
   return Math.floor((1 + Math.sqrt(1 + 8 * exp / deltaNextLevel)) / 2);
 }
