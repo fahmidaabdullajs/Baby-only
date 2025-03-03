@@ -122,7 +122,7 @@ module.exports = {
     if (userReply === correctAnswer.toLowerCase()) {
       await api.unsendMessage(Reply.messageID);
 
-      let rewardCoins = 500;
+      let rewardCoins = 1000;
       let rewardExp = 121;
       let userData = await usersData.get(author);
       await usersData.set(author, {
@@ -143,7 +143,7 @@ module.exports = {
     } else {
       await api.unsendMessage(Reply.messageID);
 
-      const penaltyCoins = 300;
+      const penaltyCoins = 500;
       const penaltyExp = 121;
       let userData = await usersData.get(author);
       await usersData.set(author, {
@@ -160,7 +160,7 @@ module.exports = {
         await QuizGameStats.create({ userID: author, incorrectAnswers: 1 });
       }
 
-      api.sendMessage(`❌ | Wrong answer baby\nYou lost ${penaltyCoins} coins & ${penaltyExp} exp.\nThe correct answer was: ${correctAnswer}`, event.threadID, event.messageID);
+      api.sendMessage(`❌ | Wrong answer baby\nYou lost ${penaltyCoins} coin & ${penaltyExp} exp.\nThe correct answer was: ${correctAnswer}`, event.threadID, event.messageID);
     }
   }
 };
