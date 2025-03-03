@@ -30,7 +30,7 @@ module.exports.config = {
   }
 };
 
-module.exports.onStart = async ({ api, event, args }) => {
+module.exports.onStart = async ({ api, event, args, usersData }) => {
   const userMessage = args.join(" ").toLowerCase();
   const uid = event.senderID;
 
@@ -40,7 +40,7 @@ module.exports.onStart = async ({ api, event, args }) => {
   }
 
   const badWords = ["fuck", "bitch", "maderchod", "asshole", "slut", "dick", "pussy", "whore", "magi", "voda", "vhuda", "vuda", "dhon", "heda", "khanki", "bessa", "noti", "kuttarbaccha", "gay", "hijla", "hijra", "ফাক", "বিচ", "মাদারচোদ", "অ্যাসহোল", "স্লাট", "ডিক", "পুসি", "হোয়ার", "মাগি", "ভোদা", "ভুদা", "ভুদা", "ধন", "হেদা", "খাকি", "বেশ্যা", "নটি", "কুকুরের বাচ্চা", "গে", "হিজড়া", "হিজলা"];
-  
+
   if (args[0] === "teach") {
     const [trigger, responses] = userMessage.replace("teach ", "").split(" - ");
     if (!trigger || !responses) return api.sendMessage("❌ | Invalid format!", event.threadID, event.messageID);
@@ -53,7 +53,6 @@ module.exports.onStart = async ({ api, event, args }) => {
 
     const existing = await Teach.findOne({ trigger });
     if (existing) {
-        // Check if the responses already exist for this trigger
         const newResponses = responseArray.filter(response => !existing.responses.includes(response));
         if (newResponses.length === 0) {
             return api.sendMessage("✅ Replies added:\n❌ | This reply has already been taught for this question. Please add a new reply.", event.threadID, event.messageID);
@@ -76,12 +75,21 @@ module.exports.onStart = async ({ api, event, args }) => {
   }
 
   if (args[0] === "remove") {
-    const trigger = userMessage.replace("remove ", "");
-    const result = await Teach.deleteOne({ trigger });
+    const [trigger, index] = userMessage.replace("remove ", "").split(" - ");
+    const triggerEntry = await Teach.findOne({ trigger });
 
-    if (!result.deletedCount) return api.sendMessage(`❌ No entry found for "${trigger}"`, event.threadID, event.messageID);
+    if (!triggerEntry) {
+      return api.sendMessage(`❌ No entry found for "${trigger}"`, event.threadID, event.messageID);
+    }
 
-    return api.sendMessage(`✅ Removed "${trigger}"`, event.threadID, event.messageID);
+    if (!index || isNaN(index) || index < 1 || index > triggerEntry.responses.length) {
+      return api.sendMessage(`❌ Invalid index. Please provide a valid index between 1 and ${triggerEntry.responses.length}.`, event.threadID, event.messageID);
+    }
+
+    const responseToRemove = triggerEntry.responses.splice(index - 1, 1); // Remove the response at the specified index
+    await triggerEntry.save();
+
+    return api.sendMessage(`✅ Removed response: "${responseToRemove}" from "${trigger}".`, event.threadID, event.messageID);
   }
 
   if (args[0] === "list" && args.length === 1) {
@@ -96,14 +104,12 @@ module.exports.onStart = async ({ api, event, args }) => {
       return api.sendMessage("❌ No user teach data found.", event.threadID, event.messageID);
     }
 
-    // Sort the userTeachCounts by count in descending order
     userTeachCounts.sort((a, b) => b.count - a.count);
 
     const userNamesWithTeachCounts = await Promise.all(
       userTeachCounts.map(async (item) => {
         try {
-          const userInfo = await api.getUserInfo(item.userID);
-          const userName = userInfo[item.userID]?.name || "Unknown User";
+          const userName = await usersData.getName(item.userID) || "Unknown User";
           return `${userName}: ${item.count}`;
         } catch (error) {
           console.error("Error fetching user info:", error);
