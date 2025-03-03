@@ -58,7 +58,7 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
     // চেক করবো এই ট্রিগারটি আগে থেকে আছে কি না
     const existing = await Teach.findOne({ trigger });
     if (existing) {
-        return api.sendMessage(`❌ | The word "${trigger}" is already taught. Please choose a different word.`, event.threadID, event.messageID);
+        return api.sendMessage(`✅ Replies added:\n❌ | "${trigger}" This reply has already been taught for this question. Please add a new reply.`, event.threadID, event.messageID);
     }
 
     await Teach.create({ trigger, responses: responseArray });
@@ -126,14 +126,18 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
   }
 
   if (args[0] === "edit") {
-    const [oldTrigger, newResponse] = userMessage.replace("edit ", "").split(" - ");
-    const updated = await Teach.findOneAndUpdate({ trigger: oldTrigger }, { responses: newResponse.split(", ") });
-
-    if (!updated) return api.sendMessage(`❌ No entry found for "${oldTrigger}"`, event.threadID, event.messageID);
-
-    return api.sendMessage(`✅ Edited response for "${oldTrigger}"`, event.threadID, event.messageID);
+  const allowedUserID = "61556006709662";
+  if (uid !== allowedUserID) {
+    return api.sendMessage("❌ You are not authorized to edit responses.", event.threadID, event.messageID);
   }
 
+  const [oldTrigger, newResponse] = userMessage.replace("edit ", "").split(" - ");
+  const updated = await Teach.findOneAndUpdate({ trigger: oldTrigger }, { responses: newResponse.split(", ") });
+
+  if (!updated) return api.sendMessage(`❌ No entry found for "${oldTrigger}"`, event.threadID, event.messageID);
+
+  return api.sendMessage(`✅ Edited response for "${oldTrigger}"`, event.threadID, event.messageID);
+}
   if (args[0] === "msg") {
     const searchTrigger = userMessage.replace("msg ", "");
     const entry = await Teach.findOne({ trigger: searchTrigger });
