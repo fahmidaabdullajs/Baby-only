@@ -47,21 +47,21 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
 
     const responseArray = responses.split(", ").map(res => res.toLowerCase());
 
-    if (responseArray.some(response => badWords.some(badWord => response.includes(badWord)))) {
+    const containsBadWord = responseArray.some(response => 
+      badWords.some(badWord => new RegExp(`\\b${badWord}\\b`, "i").test(response))
+    );
+
+    if (containsBadWord) {
         return api.sendMessage("❌ | Teaching 18+ content is not allowed!", event.threadID, event.messageID);
     }
 
+    // চেক করবো এই ট্রিগারটি আগে থেকে আছে কি না
     const existing = await Teach.findOne({ trigger });
     if (existing) {
-        const newResponses = responseArray.filter(response => !existing.responses.includes(response));
-        if (newResponses.length === 0) {
-            return api.sendMessage("✅ Replies added:\n❌ | This reply has already been taught for this question. Please add a new reply.", event.threadID, event.messageID);
-        }
-        existing.responses.push(...newResponses);
-        await existing.save();
-    } else {
-        await Teach.create({ trigger, responses: responseArray });
+        return api.sendMessage(`❌ | The word "${trigger}" is already taught. Please choose a different word.`, event.threadID, event.messageID);
     }
+
+    await Teach.create({ trigger, responses: responseArray });
 
     const userTeach = await UserTeachCount.findOne({ userID: uid });
     if (userTeach) {
@@ -86,7 +86,7 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
       return api.sendMessage(`❌ Invalid index. Please provide a valid index between 1 and ${triggerEntry.responses.length}.`, event.threadID, event.messageID);
     }
 
-    const responseToRemove = triggerEntry.responses.splice(index - 1, 1); // Remove the response at the specified index
+    const responseToRemove = triggerEntry.responses.splice(index - 1, 1);
     await triggerEntry.save();
 
     return api.sendMessage(`✅ Removed response: "${responseToRemove}" from "${trigger}".`, event.threadID, event.messageID);
