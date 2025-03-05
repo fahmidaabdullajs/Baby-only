@@ -17,7 +17,7 @@ module.exports = {
   config: {
     name: "animequiz",
     aliases: ["aniqz"],
-    version: "1.8",
+    version: "1.7",
     author: "MahMUD",
     countDown: 10,
     role: 0,
@@ -49,9 +49,9 @@ module.exports = {
 
             // Increment win count for correct answer in MongoDB
             await db.collection('animeQuizStats').updateOne(
-              { userID: event.senderID }, // Match the user by ID
-              { $inc: { correctAnswers: 1 } }, // Increment the correct answer count by 1
-              { upsert: true } // Insert if the document doesn't exist
+              { userID: event.senderID },
+              { $inc: { correctAnswers: 1 } },
+              { upsert: true }
             );
 
             const message = `✅ | Correct answer!\nYou have earned ${getCoin} coins and ${getExp} exp.`;
@@ -77,9 +77,39 @@ module.exports = {
 
   onStart: async function ({ api, args, event, usersData }) {
     try {
+      const { senderID } = event;
+      const maxlimit = 15;
+      const animeTimeLimit = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
+      const currentTime = Date.now();
+      const userData = await usersData.get(senderID);
+
+      if (!userData.data.animes) {
+        userData.data.animes = { count: 0, firstAnime: currentTime };
+      }
+
+      const timeElapsed = currentTime - userData.data.animes.firstAnime;
+      if (timeElapsed >= animeTimeLimit) {
+        userData.data.animes = { count: 0, firstAnime: currentTime };
+      }
+
+      if (userData.data.animes.count >= maxlimit) {
+        const timeLeft = animeTimeLimit - timeElapsed;
+        const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        return api.sendMessage(
+          `❌ | You have reached your anime quiz limit.\nTry again in ${hoursLeft}h ${minutesLeft}m.`,
+          event.threadID,
+          event.messageID
+        );
+      }
+
       if (!args[0]) {
         // Pick a random quiz from the JSON file
         const randomQuiz = animeQuiz[Math.floor(Math.random() * animeQuiz.length)];
+
+        // Increase the quiz count for the user
+        userData.data.animes.count++;
+        await usersData.set(senderID, userData);
 
         api.sendMessage(
           { 
@@ -105,8 +135,8 @@ module.exports = {
       } else if (args[0] === "list") {
         // Fetch rankings from MongoDB based on correctAnswers
         const quizStats = await db.collection('animeQuizStats')
-          .find({ correctAnswers: { $gte: 0 } }) // Only consider wins
-          .sort({ correctAnswers: -1 }) // Sort by correctAnswers in descending order
+          .find({ correctAnswers: { $gte: 0 } })
+          .sort({ correctAnswers: -1 })
           .toArray();
 
         if (quizStats.length === 0) {
