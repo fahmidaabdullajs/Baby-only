@@ -22,7 +22,7 @@ const WaifuWin = mongoose.models.WaifuWin || mongoose.model("WaifuWin", waifuWin
 module.exports = {
   config: {
     name: "waifu",
-    version: "1.8",
+    version: "1.9",
     author: "MahMUD",
     countDown: 10,
     role: 0,
@@ -33,12 +33,16 @@ module.exports = {
   },
 
   onReply: async function ({ api, event, Reply, usersData }) {
-    const { waifu } = Reply;
+    const { waifu, author } = Reply;
     const getCoin = 1000;
     const getExp = 121;
     const penaltyCoin = 300;
     const penaltyExp = 100;
     const userData = await usersData.get(event.senderID);
+
+    if (event.senderID !== author) {
+        return api.sendMessage("𝐓𝐡𝐢𝐬 𝐢𝐬 𝐧𝐨𝐭 𝐲𝐨𝐮𝐫 𝐪𝐮𝐢𝐳 𝐛𝐚𝐛𝐲 >🐸", event.threadID, event.messageID);
+    }
 
     if (event.type === "message_reply") {
       const reply = event.body.toLowerCase();
@@ -52,14 +56,13 @@ module.exports = {
               exp: userData.exp + getExp
             });
 
-            // Update or insert user win count in MongoDB
             await WaifuWin.findOneAndUpdate(
               { userID: event.senderID },
               { $inc: { winCount: 1 } },
               { upsert: true, new: true }
             );
 
-            const message = `✅ | Correct answer baby.\nYou have earned ${getCoin} coins and ${getExp} exp.`;
+            const message = `✅ | Correct answer! 🎉\nYou have earned ${getCoin} coins and ${getExp} exp.`;
             await api.sendMessage(message, event.threadID, event.messageID);
           } catch (err) {
             console.log("Error: ", err.message);
@@ -71,7 +74,7 @@ module.exports = {
             exp: userData.exp - penaltyExp
           });
           await api.sendMessage(
-            `❌ | Wrong Answer baby.\nYou lost ${penaltyCoin} coins & ${penaltyExp} exp.\nCorrect answer was: ${waifu}`,
+            `❌ | Wrong Answer!\nYou lost ${penaltyCoin} coins & ${penaltyExp} exp.\nCorrect answer was: ${waifu}`,
             event.threadID,
             event.messageID
           );
@@ -82,8 +85,36 @@ module.exports = {
 
   onStart: async function ({ api, args, event, usersData }) {
     try {
+      const { senderID } = event;
+      const maxlimit = 15;
+      const waifuTimeLimit = 12 * 60 * 60 * 1000;
+      const currentTime = Date.now();
+      const userData = await usersData.get(senderID);
+
+      if (!userData.data.waifus) {
+        userData.data.waifus = { count: 0, firstWaifu: currentTime };
+      }
+
+      const timeElapsed = currentTime - userData.data.waifus.firstWaifu;
+      if (timeElapsed >= waifuTimeLimit) {
+        userData.data.waifus = { count: 0, firstWaifu: currentTime };
+      }
+
+      if (userData.data.waifus.count >= maxlimit) {
+        const timeLeft = waifuTimeLimit - timeElapsed;
+        const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        return api.sendMessage(
+          `❌ | You have reached your waifu attempt limit (${maxlimit}).\nPlease try again in ${hoursLeft}h ${minutesLeft}m.`,
+          event.threadID,
+          event.messageID
+        );
+      }
+
       if (!args[0]) {
-        // Pick a random waifu from the JSON file
+        userData.data.waifus.count++;
+        await usersData.set(senderID, userData);
+
         const randomWaifu = waifus[Math.floor(Math.random() * waifus.length)];
 
         api.sendMessage(
@@ -108,7 +139,6 @@ module.exports = {
           event.messageID
         );
       } else if (args[0] === "list") {
-        // Fetch rankings from MongoDB
         const waifuStats = await WaifuWin.find().sort({ winCount: -1 });
 
         if (waifuStats.length === 0) {
