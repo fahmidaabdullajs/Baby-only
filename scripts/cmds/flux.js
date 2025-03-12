@@ -1,57 +1,46 @@
-const fs = require("fs");
-const path = require("path");
 const axios = require("axios");
 
-module.exports = {
-  config: {
-    name: "flux",
-    aliases: ["imagine"],
-    author: "Mahi--",
-    version: "2.0",
-    cooldowns: 15,
-    role: 0,
-    shortDescription: "Generate stunning artwork from your prompts.",
-    longDescription: "Transforms your prompt into a beautifully crafted image using the Mobius AI system.",
-    category: "image gen",
-    guide: "{p}dal <your prompt>",
-  },
+module.exports.config = {
+  name: "flux",
+  version: "2.0",
+  role: 0,
+  author: "Dipto",
+  description: "Flux Image Generator",
+  category: "Image gen",
+  premium: true,
+  guide: "{pn} [prompt] --ratio 1024x1024\n{pn} [prompt]",
+  countDown: 15,
+};
 
-  onStart: async function ({ message, args, api, event }) {
+module.exports.onStart = async ({ event, args, api }) => {
+  const dipto = "https://www.noobs-api.rf.gd/dipto";
+
+  try {
     const prompt = args.join(" ");
-    if (!prompt) {
-      return api.sendMessage("⚠ | You need to provide a prompt to create an image. Try something descriptive!", event.threadID);
-    }
+    const [prompt2, ratio = "1:1"] = prompt.includes("--ratio")
+      ? prompt.split("--ratio").map(s => s.trim())
+      : [prompt, "1:1"];
 
     const startTime = Date.now();
-    api.sendMessage("Please wait... ⏳", event.threadID, event.messageID);
+    
+    const waitMessage = await api.sendMessage("Generating image, please wait... 😘", event.threadID);
+    api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
-    try {
-      const apiUrl = `https://mahi-apis.onrender.com/api/dal?prompt=${encodeURIComponent(prompt)}`;
-      const response = await axios.get(apiUrl);
+    const apiurl = `${dipto}/flux?prompt=${encodeURIComponent(prompt2)}&ratio=${encodeURIComponent(ratio)}`;
+    const response = await axios.get(apiurl, { responseType: "stream" });
 
-      const imageUrl = response.data.imageUrl;
-      if (!imageUrl) {
-        return api.sendMessage("❌ | Couldn’t fetch the image right now. Try again soon!", event.threadID);
-      }
+    const timeTaken = ((Date.now() - startTime) / 1000).toFixed(2);
 
-      const imageResponse = await axios.get(imageUrl, { responseType: "arraybuffer" });
-      const cacheFolderPath = path.join(__dirname, "cache");
-      if (!fs.existsSync(cacheFolderPath)) fs.mkdirSync(cacheFolderPath);
+    api.setMessageReaction("✅", event.messageID, () => {}, true);
+    api.unsendMessage(waitMessage.messageID);
 
-      const imagePath = path.join(cacheFolderPath, `generated_image_${Date.now()}.png`);
-      fs.writeFileSync(imagePath, Buffer.from(imageResponse.data, "binary"));
-
-      const generationTime = ((Date.now() - startTime) / 1000).toFixed(2);
-      const stream = fs.createReadStream(imagePath);
-
-      message.reply({
-        body: `✨ | Here’s your generated image.`,
-        attachment: stream
-      });
-
-    } catch (error) {
-      console.error("Image Generation Error:", error);
-      return api.sendMessage("❌ | Something went wrong. Try a different prompt or try again later.", event.threadID);
-    }
+    api.sendMessage({
+      body: `Here's your image (Generated in ${timeTaken} seconds)`,
+      attachment: response.data,
+    }, event.threadID, event.messageID);
+    
+  } catch (e) {
+    console.error(e);
+    api.sendMessage("Error: " + e.message, event.threadID, event.messageID);
   }
 };
