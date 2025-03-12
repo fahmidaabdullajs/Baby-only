@@ -1,66 +1,76 @@
 const axios = require("axios");
-const fs = require('fs-extra');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
+
+const SEARCH_API = "https://www.noobz-api.rf.gd/api/yts?name=";
+const DOWNLOAD_API = "https://fastapi-nyx-production.up.railway.app/y?url=";
 
 async function video(event, args, message) {
     try {
-        let title = '';
-        let videoId = '';
+        let title = "";
+        let videoId = "";
 
-        if (event.messageReply && event.messageReply.attachments && event.messageReply.attachments.length > 0) {
+        // If replying to a video/audio attachment
+        if (event.messageReply && event.messageReply.attachments?.length > 0) {
             const attachment = event.messageReply.attachments[0];
             if (attachment.type !== "video" && attachment.type !== "audio") {
-                message.reply("Invalid attachment type.");
-                return;
+                return message.reply("❌ Invalid attachment type.");
             }
 
             const shortUrl = attachment.url;
             const musicRecognitionResponse = await axios.get(`https://audio-recon-ahcw.onrender.com/kshitiz?url=${encodeURIComponent(shortUrl)}`);
             title = musicRecognitionResponse.data.title;
-        } else if (args.length === 0) {
-            message.reply("Please provide a video name or reply to a video/audio attachment.");
-            return;
-        } else {
+        } 
+        // If user provides a title
+        else if (args.length > 0) {
             title = args.join(" ");
+        } 
+        // No valid input
+        else {
+            return message.reply("❌ Please provide a video name or reply to a video/audio attachment.");
         }
 
-        const searchResponse = await axios.get(`https://youtube-kshitiz-gamma.vercel.app/yt?search=${encodeURIComponent(title)}`);
-        if (searchResponse.data.length > 0) {
-            videoId = searchResponse.data[0].videoId;
+        // Fetch search results
+        const searchResponse = await axios.get(`${SEARCH_API}${encodeURIComponent(title)}`);
+        const results = searchResponse.data.data;
+        
+        if (!results || results.length === 0) {
+            return message.reply("❌ No video found for the given query.");
         }
 
-        if (!videoId) {
-            message.reply("No video found for the given query.");
-            return;
+        const selectedVideo = results[0]; // Selecting the first result
+        videoId = selectedVideo.id;
+
+        // Fetch download link
+        const downloadResponse = await axios.get(`${DOWNLOAD_API}https://www.youtube.com/watch?v=${videoId}&type=mp3`);
+        const songUrl = downloadResponse.data.url;
+
+        if (!songUrl) {
+            return message.reply("❌ Error: Unable to fetch the song. Please try again later.");
         }
 
-        try {
-            const downloadResponse = await axios.get(`${global.GoatBot.config.api}api/ytmp3?query=${videoId}&format=mp3`);
-            const songUrl = downloadResponse.data.data;
-            const filePath = path.join(__dirname, "cache", `${searchResponse.data[0].title}.mp3`);
+        const filePath = path.join(__dirname, "cache", `${selectedVideo.name}.mp3`);
+        fs.writeFileSync(filePath, Buffer.from((await axios.get(songUrl, { responseType: "arraybuffer" })).data, "binary"));
 
-            fs.writeFileSync(filePath, Buffer.from((await axios.get(songUrl, { responseType: "arraybuffer" })).data, "binary"));
+        // Shorten the URL
+        const tinyUrlResponse = await axios.get(`https://tinyurl.com/api-create.php?url=${songUrl}`);
+        const tinyUrl = tinyUrlResponse.data;
 
-            const tinyUrlResponse = await axios.get(`https://tinyurl.com/api-create.php?url=${songUrl}`);
-            const tinyUrl = tinyUrlResponse.data;
+        await message.reply({
+            body: `✅𝙃𝙚𝙧𝙚'𝙨 𝙮𝙤𝙪𝙧 𝙨𝙤𝙣𝙜 𝙗𝙖𝙗𝙮 \n\n 🐤 | 𝗲𝙣𝙟𝙤𝙮 : ${selectedVideo.name}`,
+            attachment: fs.createReadStream(filePath)
+        }, () => fs.unlinkSync(filePath));
 
-            await message.reply({
-                body: `✅𝙃𝙚𝙧𝙚'𝙨 𝙮𝙤𝙪𝙧 𝙨𝙤𝙣𝙜 𝙗𝙖𝙗𝙮 \n\n 🐤 | 𝗲𝙣𝙟𝙤𝙮 : ${title}`,
-                attachment: fs.createReadStream(filePath)
-            }, () => fs.unlinkSync(filePath));
-        } catch (error) {
-            message.reply("Error: Unable to fetch the song. Please try again later.");
-        }
     } catch (error) {
         console.error("Error:", error);
-        message.reply("An error occurred.");
+        message.reply("❌ An error occurred while processing your request.");
     }
 }
 
 module.exports = {
     config: {
         name: "sing",
-        version: "1.0",
+        version: "1.1",
         author: "Vex_Kshitiz",
         countDown: 10,
         role: 0,
