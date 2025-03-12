@@ -30,7 +30,7 @@ module.exports.config = {
   }
 };
 
-module.exports.onStart = async ({ api, event, args, usersData }) => {
+module.exports.onStart = async ({ api, event, args }) => {
   const userMessage = args.join(" ").toLowerCase();
   const uid = event.senderID;
 
@@ -40,28 +40,23 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
   }
 
   const badWords = ["fuck", "bitch", "maderchod", "asshole", "slut", "dick", "pussy", "whore", "magi", "voda", "vhuda", "vuda", "dhon", "heda", "khanki", "bessa", "noti", "kuttarbaccha", "gay", "hijla", "hijra", "ফাক", "বিচ", "মাদারচোদ", "অ্যাসহোল", "স্লাট", "ডিক", "পুসি", "হোয়ার", "মাগি", "ভোদা", "ভুদা", "ভুদা", "ধন", "হেদা", "খাকি", "বেশ্যা", "নটি", "কুকুরের বাচ্চা", "গে", "হিজড়া", "হিজলা"];
-
   if (args[0] === "teach") {
     const [trigger, responses] = userMessage.replace("teach ", "").split(" - ");
     if (!trigger || !responses) return api.sendMessage("❌ | Invalid format!", event.threadID, event.messageID);
 
     const responseArray = responses.split(", ").map(res => res.toLowerCase());
 
-    const containsBadWord = responseArray.some(response => 
-      badWords.some(badWord => new RegExp(`\\b${badWord}\\b`, "i").test(response))
-    );
-
-    if (containsBadWord) {
+    if (responseArray.some(response => badWords.some(badWord => response.includes(badWord)))) {
         return api.sendMessage("❌ | Teaching 18+ content is not allowed!", event.threadID, event.messageID);
     }
 
-    // চেক করবো এই ট্রিগারটি আগে থেকে আছে কি না
     const existing = await Teach.findOne({ trigger });
     if (existing) {
-        return api.sendMessage(`✅ Replies added:\n❌ | "${trigger}" This reply has already been taught for this question. Please add a new reply.`, event.threadID, event.messageID);
+        existing.responses.push(...responseArray);
+        await existing.save();
+    } else {
+        await Teach.create({ trigger, responses: responseArray });
     }
-
-    await Teach.create({ trigger, responses: responseArray });
 
     const userTeach = await UserTeachCount.findOne({ userID: uid });
     if (userTeach) {
@@ -71,30 +66,21 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
         await UserTeachCount.create({ userID: uid, count: 1 });
     }
 
-    return api.sendMessage(`✅ Replies added: Replies "${responses}" added to "${trigger}".`, event.threadID, event.messageID);
+    return api.sendMessage(`✅ Replies added for "${trigger}"`, event.threadID, event.messageID);
   }
 
   if (args[0] === "remove") {
-    const [trigger, index] = userMessage.replace("remove ", "").split(" - ");
-    const triggerEntry = await Teach.findOne({ trigger });
+    const trigger = userMessage.replace("remove ", "");
+    const result = await Teach.deleteOne({ trigger });
 
-    if (!triggerEntry) {
-      return api.sendMessage(`❌ No entry found for "${trigger}"`, event.threadID, event.messageID);
-    }
+    if (!result.deletedCount) return api.sendMessage(`❌ No entry found for "${trigger}"`, event.threadID, event.messageID);
 
-    if (!index || isNaN(index) || index < 1 || index > triggerEntry.responses.length) {
-      return api.sendMessage(`❌ Invalid index. Please provide a valid index between 1 and ${triggerEntry.responses.length}.`, event.threadID, event.messageID);
-    }
-
-    const responseToRemove = triggerEntry.responses.splice(index - 1, 1);
-    await triggerEntry.save();
-
-    return api.sendMessage(`✅ Removed response: "${responseToRemove}" from "${trigger}".`, event.threadID, event.messageID);
+    return api.sendMessage(`✅ Removed "${trigger}"`, event.threadID, event.messageID);
   }
 
   if (args[0] === "list" && args.length === 1) {
     const totalTeach = await Teach.countDocuments();
-    return api.sendMessage(`🎀 𝐓𝐨𝐭𝐚𝐥 𝐓𝐞𝐚𝐜𝐡: ${totalTeach}`, event.threadID, event.messageID);
+    return api.sendMessage(`♻️ 𝐓𝐨𝐭𝐚𝐥 𝐓𝐞𝐚𝐜𝐡: ${totalTeach}`, event.threadID, event.messageID);
   }
 
   if (args[0] === "list" && args[1] === "all") {
@@ -104,12 +90,11 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
       return api.sendMessage("❌ No user teach data found.", event.threadID, event.messageID);
     }
 
-    userTeachCounts.sort((a, b) => b.count - a.count);
-
     const userNamesWithTeachCounts = await Promise.all(
       userTeachCounts.map(async (item) => {
         try {
-          const userName = await usersData.getName(item.userID) || "Unknown User";
+          const userInfo = await api.getUserInfo(item.userID);
+          const userName = userInfo[item.userID]?.name || "Unknown User";
           return `${userName}: ${item.count}`;
         } catch (error) {
           console.error("Error fetching user info:", error);
@@ -117,6 +102,8 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
         }
       })
     );
+
+    userTeachCounts.sort((a, b) => b.count - a.count);
 
     const output = userNamesWithTeachCounts
       .map((item, index) => `${index + 1}. ${item}`)
@@ -126,18 +113,14 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
   }
 
   if (args[0] === "edit") {
-  const allowedUserID = "61556006709662";
-  if (uid !== allowedUserID) {
-    return api.sendMessage("❌ You are not authorized to edit responses.", event.threadID, event.messageID);
+    const [oldTrigger, newResponse] = userMessage.replace("edit ", "").split(" - ");
+    const updated = await Teach.findOneAndUpdate({ trigger: oldTrigger }, { responses: newResponse.split(", ") });
+
+    if (!updated) return api.sendMessage(`❌ No entry found for "${oldTrigger}"`, event.threadID, event.messageID);
+
+    return api.sendMessage(`✅ Edited response for "${oldTrigger}"`, event.threadID, event.messageID);
   }
 
-  const [oldTrigger, newResponse] = userMessage.replace("edit ", "").split(" - ");
-  const updated = await Teach.findOneAndUpdate({ trigger: oldTrigger }, { responses: newResponse.split(", ") });
-
-  if (!updated) return api.sendMessage(`❌ No entry found for "${oldTrigger}"`, event.threadID, event.messageID);
-
-  return api.sendMessage(`✅ Edited response for "${oldTrigger}"`, event.threadID, event.messageID);
-}
   if (args[0] === "msg") {
     const searchTrigger = userMessage.replace("msg ", "");
     const entry = await Teach.findOne({ trigger: searchTrigger });
