@@ -349,7 +349,7 @@ if (command === "payloan") {
   }
 }
 	    
-function toBoldUnicode(text) {
+const toBoldUnicode = (text) => {
   const boldAlphabet = {
     "a": "𝐚", "b": "𝐛", "c": "𝐜", "d": "𝐝", "e": "𝐞", "f": "𝐟", "g": "𝐠", "h": "𝐡", "i": "𝐢", "j": "𝐣",
     "k": "𝐤", "l": "𝐥", "m": "𝐦", "n": "𝐧", "o": "𝐨", "p": "𝐩", "q": "𝐪", "r": "𝐫", "s": "𝐬", "t": "𝐭",
@@ -358,47 +358,51 @@ function toBoldUnicode(text) {
     "O": "𝐎", "P": "𝐏", "Q": "𝐐", "R": "𝐑", "S": "𝐒", "T": "𝐓", "U": "𝐔", "V": "𝐕", "W": "𝐖", "X": "𝐗",
     "Y": "𝐘", "Z": "𝐙", " ": " ", "'": "'", ",": ",", ".": ".", "-": "-", "!": "!", "?": "?"
   };
-
   return text.split('').map(char => boldAlphabet[char] || char).join('');
-}
+};
 
 if (command === "top") {
   try {
+    // Fetch top 15 users sorted by bank balance
     const topUsers = await bankCollection.find({}).sort({ bank: -1 }).limit(15).toArray();
 
+    // If no users found, return error message
     if (!topUsers || topUsers.length === 0) {
       return message.reply(toBoldUnicode("【🏦 𝐁𝐚𝐧𝐤 🏦】\n\n❌ No data available for top users."));
     }
 
-    const topList = toBoldUnicode("[🏦 𝐁𝐚𝐧𝐤 🏦]\n\n") + toBoldUnicode("Top 𝟏𝟓 Bank Richest Users:\n") +
-      (await Promise.all(
-        topUsers.map(async (user, index) => {
-          if (!user || !user.userId) return null; // Removed this line to avoid skipping
+    // Header for the ranking list
+    let topList = toBoldUnicode("[🏦 𝐁𝐚𝐧𝐤 🏦]\n\n") + toBoldUnicode("𝐓𝐨𝐩 𝟏𝟓 𝐁𝐚𝐧𝐤 𝐑𝐢𝐜𝐡𝐞𝐬𝐭 𝐔𝐬𝐞𝐫𝐬:\n");
 
-          const userId = user.userId;
-          const userInfo = await api.getUserInfo(userId);
-          const userName = userInfo[userId]?.name || "Unknown User";
-          const balanceDisplay = user.bank ? formatMoney(user.bank) : "0";
+    // Loop through top users and format output
+    for (let index = 0; index < topUsers.length; index++) {
+      const user = topUsers[index];
+      if (!user || !user.userId) continue; // Skip if user data is missing
 
-          let rankSymbol = "";
-          if (index === 0) rankSymbol = "🥇";
-          else if (index === 1) rankSymbol = "🥈";
-          else if (index === 2) rankSymbol = "🥉";
-          else rankSymbol = `${index + 1}`;
+      const userId = user.userId;
+      const userName = await usersData.getName(userId) || "Unknown User"; // Get username
+      const balanceDisplay = user.bank ? formatMoney(user.bank) : "0"; // Format balance
 
-          return `${rankSymbol}. ${toBoldUnicode(userName)}: ${toBoldUnicode(balanceDisplay)}`;
-        })
-      )).join("\n"); // Removed filter(Boolean)
+      // Rank Symbols
+      let rankSymbol = "";
+      if (index === 0) rankSymbol = "🥇";
+      else if (index === 1) rankSymbol = "🥈";
+      else if (index === 2) rankSymbol = "🥉";
+      else rankSymbol = `${index + 1}.`;
 
-    return message.reply(topList);
+      // Add formatted user data to the list
+      topList += `${rankSymbol} ${toBoldUnicode(userName)}: ${toBoldUnicode(balanceDisplay)}\n`;
+    }
+
+    return message.reply(topList.trim()); // Send the final list
   } catch (error) {
     console.error("Error fetching top users:", error);
     return message.reply(toBoldUnicode("❌ | An error occurred while fetching the top bank users."));
   }
 }
 
-return message.reply(toBoldUnicode("[🏦 Bank 🏦]\n\n❌ | valid commands: Balance, Deposit, Withdraw, Interest, Transfer, Top, Loan, PayLoan."));
-
+// Default response if an invalid command is given
+return message.reply(toBoldUnicode("[🏦 Bank 🏦]\n\n❌ | Valid commands: Balance, Deposit, Withdraw, Interest, Transfer, Top, Loan, PayLoan."));
 } catch (error) {
   console.error("Error during MongoDB operation:", error);
   return message.reply(toBoldUnicode("[🏦 Bank 🏦]\n\n❌ | An error occurred while processing your request. Please try again later."));
