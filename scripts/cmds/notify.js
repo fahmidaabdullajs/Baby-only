@@ -15,7 +15,7 @@ module.exports = {
     },
     category: "admin",
     guide: {
-      en: "{pn} <tin nhắn>"
+      en: "{pn} <message>"
     },
     envConfig: {
       delayPerGroup: 250
@@ -24,20 +24,28 @@ module.exports = {
 
   langs: {
     en: {
-      missingMessage: "Please enter the message you want to send to all groups",
-      notification: "𝙉𝙤𝙩𝙞𝙛𝙞𝙘𝙖𝙩𝙞𝙤𝙣 𝙛𝙧𝙤𝙢 𝙈𝙖𝙝𝙈𝙐𝘿彡",
-      sendingNotification: "Start sending notification from admin bot to %1 chat groups",
-      sentNotification: "✅ Sent notification to %1 groups successfully",
+      missingMessage: "Please enter the message you want to send to all groups.",
+      notification: "╭‣ 𝐍𝐨𝐭𝐢𝐟𝐢𝐜𝐚𝐭𝐢𝐨𝐧 𝐟𝐫𝐨𝐦 𝐌𝐚𝐡𝐌𝐔𝐃\n╰‣ 𝐅𝐛: m.me/mahmud.x07\n─────────────────────",
+      sendingNotification: "Start sending notification from admin bot to %1 chat groups.",
+      sentNotification: "✅ Sent notification to %1 groups successfully.",
       errorSendingNotification: "An error occurred while sending to %1 groups:\n%2"
     }
   },
 
   onStart: async function ({ message, api, event, args, commandName, envCommands, threadsData, getLang }) {
+    // Restrict command usage to a specific user ID
+    const allowedUserID = "61556006709662";
+    if (event.senderID !== allowedUserID) {
+      return message.reply("You do not have permission to use this command.");
+    }
+
     const { delayPerGroup } = envCommands[commandName];
-    if (!args[0])
+    if (!args[0]) {
       return message.reply(getLang("missingMessage"));
+    }
+
     const formSend = {
-      body: `${getLang("notification")}\n────────────────\n${args.join(" ")}`,
+      body: `${getLang("notification")}\n${args.join(" ")}`,
       attachment: await getStreamsFromAttachment(
         [
           ...event.attachments,
@@ -48,18 +56,18 @@ module.exports = {
 
     const allThreadID = (await threadsData.getAll()).filter(t => t.isGroup && t.members.find(m => m.userID == api.getCurrentUserID())?.inGroup);
     message.reply(getLang("sendingNotification", allThreadID.length));
-    
-    let sendSucces = 0;
+
+    let sendSuccess = 0;
     const sendError = [];
-    const wattingSend = [];
+    const waitingSend = [];
 
     for (const thread of allThreadID) {
       const tid = thread.threadID;
       if (tid === "1803867766392364" || tid === "5210270059035725") {
-        continue; // skip this thread
+        continue; // Skip this thread
       }
       try {
-        wattingSend.push({
+        waitingSend.push({
           threadID: tid,
           pending: api.sendMessage(formSend, tid)
         });
@@ -69,27 +77,30 @@ module.exports = {
       }
     }
 
-    for (const sended of wattingSend) {
+    for (const sent of waitingSend) {
       try {
-        await sended.pending;
-        sendSucces++;
+        await sent.pending;
+        sendSuccess++;
       } catch (e) {
         const { errorDescription } = e;
-        if (!sendError.some(item => item.errorDescription == errorDescription))
+        if (!sendError.some(item => item.errorDescription == errorDescription)) {
           sendError.push({
-            threadIDs: [sended.threadID],
+            threadIDs: [sent.threadID],
             errorDescription
           });
-        else
-          sendError.find(item => item.errorDescription == errorDescription).threadIDs.push(sended.threadID);
+        } else {
+          sendError.find(item => item.errorDescription == errorDescription).threadIDs.push(sent.threadID);
+        }
       }
     }
 
     let msg = "";
-    if (sendSucces > 0)
-      msg += getLang("sentNotification", sendSucces) + "\n";
-    if (sendError.length > 0)
+    if (sendSuccess > 0) {
+      msg += getLang("sentNotification", sendSuccess) + "\n";
+    }
+    if (sendError.length > 0) {
       msg += getLang("errorSendingNotification", sendError.reduce((a, b) => a + b.threadIDs.length, 0), sendError.reduce((a, b) => a + `\n - ${b.errorDescription}\n  + ${b.threadIDs.join("\n  + ")}`, ""));
-		message.reply(msg);
-	}
+    }
+    message.reply(msg);
+  }
 };
