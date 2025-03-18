@@ -1,7 +1,7 @@
 module.exports = {
   config: {
-    name: "freefire",
-    aliases: ["ff"],
+    name: "ff",
+    aliases: ["ffvid"],
     version: "1.0",
     author: "𝗠𝗮𝗵 𝗠𝗨𝗗 彡",
     countDown: 20,
