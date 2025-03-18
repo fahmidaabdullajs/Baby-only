@@ -1,0 +1,328 @@
+{
+  "categories": {
+    "bangla": [
+      {
+        "question": "ফ্রি ফায়ারের প্রধান চরিত্র কে?",
+        "options": {
+          "a": "আলক",
+          "b": "ডি জে ম্যাক্স",
+          "c": "হায়াতো",
+          "d": "কে"
+        },
+        "correctAnswer": "a"
+      },
+      {
+        "question": "ফ্রি ফায়ারে কোন অস্ত্রটি দীর্ঘ রেঞ্জে সঠিকভাবে লক্ষ্যবস্তুতে আঘাত করতে সক্ষম?",
+        "options": {
+          "a": "একে 47",
+          "b": "মপ 5",
+          "c": "কার98কে",
+          "d": "এম1014"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "ফ্রি ফায়ারে একটি স্কোয়াডে সর্বাধিক কতজন খেলোয়াড় থাকতে পারে?",
+        "options": {
+          "a": "2",
+          "b": "3",
+          "c": "4",
+          "d": "5"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "ফ্রি ফায়ারে মূল লক্ষ্য কি?",
+        "options": {
+          "a": "মিশন সম্পন্ন করা",
+          "b": "শেষ ব্যক্তি হিসেবে দাঁড়িয়ে থাকা",
+          "c": "ফ্ল্যাগ ক্যাপচার করা",
+          "d": "সবচেয়ে বেশি পয়েন্ট সংগ্রহ করা"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "ফ্রি ফায়ারে কেমন চরিত্র অন্য খেলোয়াড়দের সুস্থ করতে পারে?",
+        "options": {
+          "a": "মিশা",
+          "b": "কে",
+          "c": "এ124",
+          "d": "ওলিভিয়া"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "ফ্রি ফায়ারে কোন আইটেমটি গতিবেগ বৃদ্ধি করতে সাহায্য করে?",
+        "options": {
+          "a": "মেড কিট",
+          "b": "এনার্জি ড্রিঙ্ক",
+          "c": "গ্লু ওয়াল",
+          "d": "স্পিড বুস্ট"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "ফ্রি ফায়ারে কেমন একটি মিষ্টি অস্ত্র যা কাছাকাছি শত্রুদের উপর হামলা করতে কার্যকর?",
+        "options": {
+          "a": "এএমপি 5",
+          "b": "একে 47",
+          "c": "মি1014",
+          "d": "কার98কে"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "ফ্রি ফায়ারে কোন চরিত্রটি শত্রুদের মেরুদন্ডে আঘাত করতে সক্ষম?",
+        "options": {
+          "a": "আলোক",
+          "b": "ফ্রাঙ্কি",
+          "c": "ওলিভিয়া",
+          "d": "লিও"
+        },
+        "correctAnswer": "a"
+      },
+      {
+        "question": "ফ্রি ফায়ারের কোন অস্ত্রটি ব্লক পদ্ধতিতে শত্রুকে বাধা দিতে ব্যবহৃত হয়?",
+        "options": {
+          "a": "একে 47",
+          "b": "এম 1014",
+          "c": "গ্লু ওয়াল",
+          "d": "আর পি জে"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "ফ্রি ফায়ারের কোন অস্ত্রটির প্রধান বৈশিষ্ট্য দ্রুত গুলি চালানো?",
+        "options": {
+          "a": "এম1014",
+          "b": "মপ5",
+          "c": "অলিম্পিক পিস্তল",
+          "d": "একে 47"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "ফ্রি ফায়ারের কোন চরিত্রটি মেডিকেল টিমপ্লেট পেতে সাহায্য করে?",
+        "options": {
+          "a": "এ124",
+          "b": "ক্লু",
+          "c": "ফ্রাঙ্কি",
+          "d": "ভিক্টর"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "ফ্রি ফায়ারে কোন ধরনের বোমা শত্রুকে ধ্বংস করতে ব্যবহৃত হয়?",
+        "options": {
+          "a": "গ্লু ওয়াল",
+          "b": "এনার্জি ড্রিঙ্ক",
+          "c": "গ্রেনেড",
+          "d": "অগ্নি বোমা"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "ফ্রি ফায়ারের কোন চরিত্রটি বুলেটের ক্ষতি কম করতে সক্ষম?",
+        "options": {
+          "a": "মোনা",
+          "b": "এ124",
+          "c": "লিও",
+          "d": "পেট্রা"
+        },
+        "correctAnswer": "a"
+      },
+      {
+        "question": "ফ্রি ফায়ারে কোন আইটেমটি শরীরের শক্তি বৃদ্ধি করতে ব্যবহৃত হয়?",
+        "options": {
+          "a": "মেড কিট",
+          "b": "এনার্জি ড্রিঙ্ক",
+          "c": "মেডিকেল কিট",
+          "d": "স্পিড বুস্ট"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "ফ্রি ফায়ারের সর্বশেষ আপডেটে কোন চরিত্রটি যুক্ত হয়েছে?",
+        "options": {
+          "a": "ওলিভিয়া",
+          "b": "জ্যাকি",
+          "c": "আলেক",
+          "d": "ক্লু"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "ফ্রি ফায়ারের নতুন মানচিত্রটি কী নামে পরিচিত?",
+        "options": {
+          "a": "এটলান্টিক",
+          "b": "প্যালাডিন",
+          "c": "ক্রাউন অফ ব্লু",
+          "d": "কালো দ্বীপ"
+        },
+        "correctAnswer": "d"
+      }
+    ],
+    "english": [
+      {
+        "question": "Who is the main character in Free Fire?",
+        "options": {
+          "a": "Alok",
+          "b": "DJ Max",
+          "c": "Hayato",
+          "d": "K"
+        },
+        "correctAnswer": "a"
+      },
+      {
+        "question": "Which weapon in Free Fire is known for its long-range accuracy?",
+        "options": {
+          "a": "AK47",
+          "b": "MP5",
+          "c": "Kar98K",
+          "d": "M1014"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "What is the maximum number of players in a Free Fire squad?",
+        "options": {
+          "a": "2",
+          "b": "3",
+          "c": "4",
+          "d": "5"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "What is the main objective in Free Fire?",
+        "options": {
+          "a": "Complete missions",
+          "b": "Be the last person standing",
+          "c": "Capture the flag",
+          "d": "Earn the most points"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "Which character in Free Fire is capable of healing other players?",
+        "options": {
+          "a": "Misha",
+          "b": "K",
+          "c": "A124",
+          "d": "Olivia"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "Which item in Free Fire boosts movement speed?",
+        "options": {
+          "a": "Med Kit",
+          "b": "Energy Drink",
+          "c": "Gloo Wall",
+          "d": "Speed Boost"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "Which weapon in Free Fire is effective at close range?",
+        "options": {
+          "a": "AK47",
+          "b": "MP5",
+          "c": "M1014",
+          "d": "Kar98K"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "Which character in Free Fire can perform damage with a sniper rifle?",
+        "options": {
+          "a": "Alok",
+          "b": "Frankie",
+          "c": "Olivia",
+          "d": "Leo"
+        },
+        "correctAnswer": "a"
+      },
+      {
+        "question": "Which weapon in Free Fire can block incoming shots?",
+        "options": {
+          "a": "AK47",
+          "b": "M1014",
+          "c": "Gloo Wall",
+          "d": "RPG"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "Which weapon in Free Fire is known for rapid-fire capability?",
+        "options": {
+          "a": "M1014",
+          "b": "MP5",
+          "c": "Olympic Pistol",
+          "d": "AK47"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "Which character in Free Fire helps teammates with medical supplies?",
+        "options": {
+          "a": "A124",
+          "b": "Clu",
+          "c": "Frankie",
+          "d": "Victor"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "Which item in Free Fire can be used to attack enemies?",
+        "options": {
+          "a": "Gloo Wall",
+          "b": "Energy Drink",
+          "c": "Grenade",
+          "d": "Flame Bomb"
+        },
+        "correctAnswer": "c"
+      },
+      {
+        "question": "Which character in Free Fire reduces bullet damage?",
+        "options": {
+          "a": "Mona",
+          "b": "A124",
+          "c": "Leo",
+          "d": "Petra"
+        },
+        "correctAnswer": "a"
+      },
+      {
+        "question": "Which item in Free Fire helps to restore health?",
+        "options": {
+          "a": "Med Kit",
+          "b": "Energy Drink",
+          "c": "Medical Kit",
+          "d": "Speed Boost"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "Which character in Free Fire was recently added in the latest update?",
+        "options": {
+          "a": "Olivia",
+          "b": "Jackie",
+          "c": "Alec",
+          "d": "Clu"
+        },
+        "correctAnswer": "b"
+      },
+      {
+        "question": "What is the new map introduced in Free Fire called?",
+        "options": {
+          "a": "Atlantic",
+          "b": "Paladin",
+          "c": "Crown of Blue",
+          "d": "Black Island"
+        },
+        "correctAnswer": "d"
+      }
+    ]
+  }
+        }
