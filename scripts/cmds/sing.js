@@ -1,99 +1,85 @@
 const axios = require("axios");
-const fs = require("fs-extra");
+const fs = require("fs");
 const path = require("path");
-const ytSearch = require("yt-search");
 
-const CACHE_FOLDER = path.join(__dirname, "cache");
+const SEARCH_API = "https://www.noobz-api.rf.gd/api/yts?name=";
+const DOWNLOAD_API = "https://fastapi-nyx-production.up.railway.app/y?url=";
 
-async function downloadAudio(videoId, filePath) {
-    const url = `https://mr-kshitizyt-hfhj.onrender.com/download?id=${videoId}`;
-    const writer = fs.createWriteStream(filePath);
-
-    const response = await axios({
-        url,
-        method: "GET",
-        responseType: "stream",
-    });
-
-    return new Promise((resolve, reject) => {
-        response.data.pipe(writer);
-        writer.on("finish", resolve);
-        writer.on("error", reject);
-    });
-}
-
-async function fetchAudioFromReply(api, event, message) {
-    const attachment = event.messageReply.attachments[0];
-    if (!attachment || (attachment.type !== "video" && attachment.type !== "audio")) {
-        throw new Error("Please reply to a valid video or audio attachment.");
-    }
-
-    const shortUrl = attachment.url;
-    const audioRecResponse = await axios.get(`https://audio-recon-ahcw.onrender.com/kshitiz?url=${encodeURIComponent(shortUrl)}`);
-    return audioRecResponse.data.title;
-}
-
-async function fetchAudioFromQuery(query) {
-    const searchResults = await ytSearch(query);
-    if (searchResults && searchResults.videos && searchResults.videos.length > 0) {
-        return searchResults.videos[0].videoId;
-    } else {
-        throw new Error("No results found for the given query.");
-    }
-}
-
-async function handleAudioCommand(api, event, args, message) {
-    api.setMessageReaction("🕢", event.messageID, () => {}, true);
-
+async function video(event, args, message) {
     try {
-        let videoId;
         let title = "";
-        if (event.messageReply && event.messageReply.attachments && event.messageReply.attachments.length > 0) {
-            title = await fetchAudioFromReply(api, event, message);
-            videoId = await fetchAudioFromQuery(title);
-        } else if (args.length > 0) {
-            const query = args.join(" ");
-            videoId = await fetchAudioFromQuery(query);
-            const searchResults = await ytSearch(query);
-            if (searchResults && searchResults.videos && searchResults.videos.length > 0) {
-                title = searchResults.videos[0].title;
-            } else {
-                throw new Error("No results found for the given query.");
+        let videoId = "";
+
+        // If replying to a video/audio attachment
+        if (event.messageReply && event.messageReply.attachments?.length > 0) {
+            const attachment = event.messageReply.attachments[0];
+            if (attachment.type !== "video" && attachment.type !== "audio") {
+                return message.reply("❌ Invalid attachment type.");
             }
-        } else {
-            message.reply("Please provide a query or reply to a valid video/audio attachment.");
-            return;
+
+            const shortUrl = attachment.url;
+            const musicRecognitionResponse = await axios.get(`https://audio-recon-ahcw.onrender.com/kshitiz?url=${encodeURIComponent(shortUrl)}`);
+            title = musicRecognitionResponse.data.title;
+        } 
+        // If user provides a title
+        else if (args.length > 0) {
+            title = args.join(" ");
+        } 
+        // No valid input
+        else {
+            return message.reply("❌ Please provide a video name or reply to a video/audio attachment.");
         }
 
-        const filePath = path.join(CACHE_FOLDER, `${videoId}.mp3`);
-        await downloadAudio(videoId, filePath);
+        // Fetch search results
+        const searchResponse = await axios.get(`${SEARCH_API}${encodeURIComponent(title)}`);
+        const results = searchResponse.data.data;
+        
+        if (!results || results.length === 0) {
+            return message.reply("❌ No video found for the given query.");
+        }
 
-        const audioStream = fs.createReadStream(filePath);
-        message.reply({ 
-            body: `✅𝙃𝙚𝙧𝙚'𝙨 𝙮𝙤𝙪𝙧 𝙨𝙤𝙣𝙜 𝙗𝙖𝙗𝙮 \n\n 🐤 | 𝗲𝙣𝙟𝙤𝙮 : ${title}`, 
-            attachment: audioStream 
-        });
-        api.setMessageReaction("🐤", event.messageID, () => {}, true);
+        const selectedVideo = results[0]; // Selecting the first result
+        videoId = selectedVideo.id;
+
+        // Fetch download link
+        const downloadResponse = await axios.get(`${DOWNLOAD_API}https://www.youtube.com/watch?v=${videoId}&type=mp3`);
+        const songUrl = downloadResponse.data.url;
+
+        if (!songUrl) {
+            return message.reply("❌ Error: Unable to fetch the song. Please try again later.");
+        }
+
+        const filePath = path.join(__dirname, "cache", `${selectedVideo.name}.mp3`);
+        fs.writeFileSync(filePath, Buffer.from((await axios.get(songUrl, { responseType: "arraybuffer" })).data, "binary"));
+
+        // Shorten the URL
+        const tinyUrlResponse = await axios.get(`https://tinyurl.com/api-create.php?url=${songUrl}`);
+        const tinyUrl = tinyUrlResponse.data;
+
+        await message.reply({
+            body: `✅𝙃𝙚𝙧𝙚'𝙨 𝙮𝙤𝙪𝙧 𝙨𝙤𝙣𝙜 𝙗𝙖𝙗𝙮 \n\n 🐤 | 𝗲𝙣𝙟𝙤𝙮 : ${selectedVideo.name}`,
+            attachment: fs.createReadStream(filePath)
+        }, () => fs.unlinkSync(filePath));
 
     } catch (error) {
-        console.error("Error:", error.message);
-        message.reply("An error occurred while processing your request.");
+        console.error("Error:", error);
+        message.reply("❌ An error occurred while processing your request.");
     }
 }
 
 module.exports = {
     config: {
         name: "sing",
-        version: "1.0",
-        author: "It's Kshitiz",
+        version: "1.1",
+        author: "Vex_Kshitiz",
         countDown: 10,
         role: 0,
-        shortDescription: "Download and send audio from YouTube.",
-        longDescription: "Download audio from YouTube based on a query or attachment.",
+        shortDescription: "Play audio from YouTube",
+        longDescription: "Play audio from YouTube with audio recognition support.",
         category: "music",
-        guide: "{p}audio [query] or reply to a video/audio attachment",
+        guide: "{p}sing videoname / reply to audio or video"
     },
-    onStart: function ({ api, event, args, message }) {
-        return handleAudioCommand(api, event, args, message);
-    },
+    onStart: function ({ event, args, message }) {
+        return video(event, args, message);
+    }
 };
