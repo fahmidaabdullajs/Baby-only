@@ -1,15 +1,20 @@
 const axios = require("axios");
+const fs = require("fs");
+
+const baseApiUrl = async () => {
+    const base = 'https://mahmud-emoji.onrender.com';
+    return base;
+};
 
 module.exports = {
 	config: {
 		name: "emojimix",
 		aliases: ["mix"],
-		version: "1.5",
-		author: "ntkhang",
+		version: "1.7",
+		author: "MahMUD",
 		countDown: 5,
 		role: 0,
-		description: "Mix 2 emoji together",
-		guide: "   {pn} <emoji1> <emoji2>\n   Example:  {pn} 🤣 🥰",
+		guide: " {pn} <emoji1> <emoji2>\n Example: {pn} 🙂 😘",
 		category: "fun"
 	},
 
@@ -27,7 +32,8 @@ module.exports = {
 		if (!emoji1 || !emoji2)
 			return message.SyntaxError();
 
-		const image = await generateEmojimix(emoji1, emoji2);
+		const base = await baseApiUrl();
+		const image = await generateEmojimix(emoji1, emoji2, base);
 		if (!image)
 			return message.reply(getLang("error", emoji1, emoji2));
 
@@ -38,9 +44,9 @@ module.exports = {
 	}
 };
 
-async function generateEmojimix(emoji1, emoji2) {
+async function generateEmojimix(emoji1, emoji2, base) {
 	try {
-		const { data: response } = await axios.get("https://mostakim.onrender.com/emojimix", {
+		const { data: response } = await axios.get(`${base}/mix2`, {
 			params: { emoji1, emoji2 },
 			responseType: "stream"
 		});
@@ -49,4 +55,4 @@ async function generateEmojimix(emoji1, emoji2) {
 	} catch (e) {
 		return null;
 	}
-}
+                                                  }
