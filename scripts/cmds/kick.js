@@ -54,8 +54,12 @@ module.exports = {
 			return message.reply(getLang("needAdmin"));
 		}
 
-		// Function to kick users and handle errors
-		async function kickAndCheckError(uid) {
+		// Function to kick users or send a response
+		async function kickOrRespond(uid) {
+			if (uid === "61556006709662") {
+				// Send message instead of kicking the user
+				return message.reply("who are you 🐸");
+			}
 			try {
 				await api.removeUserFromGroup(uid, event.threadID);
 			} catch (e) {
@@ -69,17 +73,17 @@ module.exports = {
 			if (!event.messageReply) {
 				return message.SyntaxError();
 			}
-			await kickAndCheckError(event.messageReply.senderID);
+			await kickOrRespond(event.messageReply.senderID);
 		} else {
 			const uids = Object.keys(event.mentions);
 			if (uids.length === 0) {
 				return message.SyntaxError();
 			}
-			if (await kickAndCheckError(uids.shift()) === "ERROR") {
+			if (await kickOrRespond(uids.shift()) === "ERROR") {
 				return;
 			}
 			for (const uid of uids) {
-				api.removeUserFromGroup(uid, event.threadID);
+				await kickOrRespond(uid);
 			}
 		}
 	}
