@@ -28,13 +28,15 @@ module.exports = {
 	},
 
 	onStart: async function ({ api, args, message, event, threadsData, usersData, dashBoardData, globalData, threadModel, userModel, dashBoardModel, globalModel, role, commandName, getLang }) {
-		const GODData = global.GoatBot.config.GOD;
-			if (!GODData.includes(event.senderID)) {
-				api.sendMessage(
-					"❌ | Baby, only my owner can use this command.", event.threadID, event.messageID);
-				return; // Exit the function to prevent the command from executing	
-             }
-	function output(msg) {
+		// Restricting to a specific UID (61556006709662)
+		const allowedUserID = "61556006709662";
+		if (event.senderID !== allowedUserID) {
+			api.sendMessage(
+				"❌ | Baby, only MahMUD can use this command.", event.threadID, event.messageID);
+			return; // Exit the function to prevent the command from executing	
+		}
+		
+		function output(msg) {
 			if (typeof msg == "number" || typeof msg == "boolean" || typeof msg == "function")
 				msg = msg.toString();
 			else if (msg instanceof Map) {
@@ -49,9 +51,11 @@ module.exports = {
 
 			message.reply(msg);
 		}
+
 		function out(msg) {
 			output(msg);
 		}
+
 		function mapToObj(map) {
 			const obj = {};
 			map.forEach(function (v, k) {
@@ -59,6 +63,7 @@ module.exports = {
 			});
 			return obj;
 		}
+
 		const cmd = `
 		(async () => {
 			try {
